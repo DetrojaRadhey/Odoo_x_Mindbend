@@ -37,4 +37,8 @@ const requestSchema = new mongoose.Schema({
   },
   advance: Number,
 });
+
+// Add this after your schema definition
+requestSchema.index({ "latlon": "2dsphere" });
+
 module.exports = mongoose.model("Request", requestSchema);
