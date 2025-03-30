@@ -46,6 +46,7 @@ exports.register = async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
+        password: user.password,
         name: user.name,
         role: "user",
       },
@@ -99,10 +100,14 @@ exports.login = async (req, res) => {
     }
 
     // Direct password comparison
-    if (user.password !== password) {
+    // if (user.password !== password) {
+    //   return responseFormatter(res, 400, false, "Invalid email or password");
+    // }
+
+    let isequal = await bcrypt.compare(password, user.password);
+    if (!isequal) {
       return responseFormatter(res, 400, false, "Invalid email or password");
     }
-
     // Generate token
     const token = generateToken(user);
 
