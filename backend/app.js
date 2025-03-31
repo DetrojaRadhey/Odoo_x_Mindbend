@@ -18,7 +18,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 app.use(
   cors({
-    origin: "http://localhost:5173", // Or an array of allowed origins
+    origin: "*", // Or an array of allowed origins
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "UPDATE"], // This allows cookies to be sent with requests.
   })
@@ -60,12 +60,18 @@ async function main() {
 // app.use(express.static("public")); // Serve static files
 
 const authRoutes = require("./routes/auth.route");
+const emergencyRoutes = require("./routes/emergency.route");
 const requestRoutes = require("./routes/request.route");
 const adminRoutes = require("./routes/admin.route");
 
+app.get("/",(req,res)=>{
+  res.send("Hi");
+})
 app.use("/auth", authRoutes);
+app.use("/emergency", emergencyRoutes);
 app.use("/request", requestRoutes);
 app.use("/admin",adminRoutes);
+
 
 app.listen(port, () => {
   console.log(`port is listing in ${port}`);
