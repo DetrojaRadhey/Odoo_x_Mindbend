@@ -87,11 +87,13 @@ exports.login = async (req, res) => {
     // If not found in User, check in ServiceProvider
     if (!user) {
       user = await ServiceProvider.findOne({ "contact.email": email });
+      console.log(user);
       if (user) {
         role = 'service_provider';
       }
     }
-
+    console.log(user);
+    
     // If not found in ServiceProvider, check in Admin
     if (!user) {
       user = await Admin.findOne({ email });
