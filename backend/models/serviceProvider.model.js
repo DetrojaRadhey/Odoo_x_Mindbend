@@ -3,10 +3,11 @@ const Schema = mongoose.Schema;
 const serviceProviderSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ["Private hospital", "Mechanical"],
+    enum: ["Hospital", "Mechanical"],
     required: true,
   },
   name: { type: String, unique: true, required: true },
+  password: {type:String, unique: true, required: true},
   contact: {
     mobile: String,
     email: String,
