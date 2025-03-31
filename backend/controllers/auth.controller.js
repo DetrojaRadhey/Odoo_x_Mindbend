@@ -42,11 +42,18 @@ exports.register = async (req, res) => {
     // Generate token
     const token = generateToken(user);
 
+    // Set token in cookie
+    res.cookie('jwt_signup', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure in production
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+
     return responseFormatter(res, 201, true, "User registered successfully", {
-      token,
       user: {
         id: user._id,
         email: user.email,
+        password: user.password,
         name: user.name,
         role: "user",
       },
@@ -99,13 +106,20 @@ exports.login = async (req, res) => {
       return responseFormatter(res, 400, false, "Invalid email or password");
     }
 
-    // Direct password comparison
-    if (user.password !== password) {
+    let isequal = await bcrypt.compare(password, user.password);
+    if (!isequal) {
       return responseFormatter(res, 400, false, "Invalid email or password");
     }
 
     // Generate token
-    const token = generateToken(user);
+    const token = jwt.sign({ id: user._id, role: role }, process.env.JWT_SECRET);
+
+    // Set token in cookie
+    res.cookie('jwt_login', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure in production
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
 
     // Format user data based on role
     const userData = {
@@ -116,11 +130,32 @@ exports.login = async (req, res) => {
     };
 
     return responseFormatter(res, 200, true, "Login successful", {
-      token,
       user: userData
     });
   } catch (err) {
     console.error("Login error:", err);
+    return responseFormatter(
+      res,
+      500,
+      false,
+      "Server error",
+      null,
+      err.message
+    );
+  }
+};
+
+// Logout user
+exports.logout = async (req, res) => {
+  try {
+    res.cookie('jwt', '', {
+      httpOnly: true,
+      expires: new Date(0)
+    });
+    
+    return responseFormatter(res, 200, true, "Logged out successfully");
+  } catch (err) {
+    console.error("Logout error:", err);
     return responseFormatter(
       res,
       500,

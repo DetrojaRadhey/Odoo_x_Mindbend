@@ -95,8 +95,24 @@ const UserSchema = new mongoose.Schema({
   },
 });
 
-// Removed password hashing middleware
+// Hash password before saving
+UserSchema.pre("save", async function (next) {
+  if (this.isModified("password") && this.password) {
+    try {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+      next();
+    } catch (err) {
+      next(err);
+    }
+  } else {
+    next();
+  }
+});
 
-// Removed comparePassword method as we're using direct comparison
+// Method to check password
+// UserSchema.methods.comparePassword = async function (candidatePassword) {
+//   return await bcrypt.compare(candidatePassword, this.password);
+// };
 
 module.exports = mongoose.model("User", UserSchema);
