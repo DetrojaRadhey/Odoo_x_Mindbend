@@ -53,9 +53,9 @@ const Index = () => {
           </div>
           <div className="md:w-1/2">
             <img 
-              src="/lovable-uploads/7cb96fae-335e-4398-9931-665353c18f20.png" 
+              src="/images/home_banner.png" 
               alt="Roadside Assistance" 
-              className="w-full max-w-md mx-auto rounded-lg"
+              className="w-[300px] max-w-md mx-auto rounded-lg"
             />
           </div>
         </div>
@@ -299,7 +299,7 @@ const Index = () => {
         </div>
       </footer>
 
-      <style jsx>{`
+      <style>{`
         .clip-triangle {
           clip-path: polygon(0 0, 100% 0, 100% 100%);
         }
