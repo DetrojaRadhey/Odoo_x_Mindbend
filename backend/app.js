@@ -61,9 +61,11 @@ async function main() {
 
 const authRoutes = require("./routes/auth.route");
 const requestRoutes = require("./routes/request.route");
+const adminRoutes = require("./routes/admin.route");
 
 app.use("/auth", authRoutes);
 app.use("/request", requestRoutes);
+app.use("/admin",adminRoutes);
 
 app.listen(port, () => {
   console.log(`port is listing in ${port}`);

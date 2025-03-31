@@ -38,11 +38,12 @@ exports.register = async (req, res) => {
 
     await user.save();
 
-    // Generate token
+    // Generate token+
+    
     const token = generateToken(user);
 
     // Set token in cookie
-    res.cookie('jwt', token, {
+    res.cookie('jwt_signup', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // Use secure in production
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
@@ -87,11 +88,13 @@ exports.login = async (req, res) => {
     // If not found in User, check in ServiceProvider
     if (!user) {
       user = await ServiceProvider.findOne({ "contact.email": email });
+      console.log(user);
       if (user) {
         role = 'service_provider';
       }
     }
-
+    console.log(user);
+    
     // If not found in ServiceProvider, check in Admin
     if (!user) {
       user = await Admin.findOne({ email });
@@ -114,12 +117,12 @@ exports.login = async (req, res) => {
     const token = jwt.sign({ id: user._id, role: role }, process.env.JWT_SECRET);
 
     // Set token in cookie
-    res.cookie('jwt', token, {
+    res.cookie('jwt_login', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // Use secure in production
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
-    
+
     // Format user data based on role
     const userData = {
       id: user._id,

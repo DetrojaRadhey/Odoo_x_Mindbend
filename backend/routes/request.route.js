@@ -4,7 +4,7 @@ const requestController = require('../controllers/request.controller');
 // const { protect } = require('../middleware/auth.middleware');
 
 // User routes
-router.post('/', requestController.createRequest);
+router.post('/createRequest', requestController.createRequest);
 router.get('/my-requests',  requestController.getUserRequests);
 router.get('/:id',  requestController.updateRequest);
 router.delete('/:id',  requestController.cancelRequest);

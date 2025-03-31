@@ -2,8 +2,15 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const requestSchema = new mongoose.Schema({
   latlon: {
-    latitude: Number,
-    longitude: Number,
+    type: {
+      type: String,
+      enum: ['Point'],
+      required: true
+    },
+    coordinates: {
+      type: [Number],
+      required: true
+    }
   },
   title: {
     type: String,
@@ -39,6 +46,5 @@ const requestSchema = new mongoose.Schema({
 });
 
 // Add this after your schema definition
-requestSchema.index({ "latlon": "2dsphere" });
-
+requestSchema.index({ latlon: "2dsphere" });
 module.exports = mongoose.model("Request", requestSchema);
