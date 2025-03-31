@@ -62,10 +62,12 @@ async function main() {
 const authRoutes = require("./routes/auth.route");
 const emergencyRoutes = require("./routes/emergency.route");
 const requestRoutes = require("./routes/request.route");
+const adminRoutes = require("./routes/admin.route");
 
 app.use("/auth", authRoutes);
 app.use("/emergency", emergencyRoutes);
 app.use("/request", requestRoutes);
+app.use("/admin",adminRoutes);
 
 
 app.listen(port, () => {
