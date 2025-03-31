@@ -80,7 +80,7 @@ exports.login = async (req, res) => {
     let role;
 
     // Check in User model first
-    user = await User.findOne({ email });
+    user = await User.findOne({email});
     if (user) {
       role = 'user';
     }
