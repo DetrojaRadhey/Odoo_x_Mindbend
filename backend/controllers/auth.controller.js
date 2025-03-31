@@ -38,7 +38,8 @@ exports.register = async (req, res) => {
 
     await user.save();
 
-    // Generate token
+    // Generate token+
+    
     const token = generateToken(user);
 
     // Set token in cookie
