@@ -40,23 +40,23 @@ const Navigation = () => {
         { name: "Key-Unlock-Assistance", icon: <Key className="h-5 w-5 mr-2" />, description: "One-stop unlock assistance" },
         { name: "Fuel-Delivery", icon: <Fuel className="h-5 w-5 mr-2" />, description: "Petrol/Diesel delivered faster" },
       ]
-    },
-    {
-      title: "Fitment Services",
-      services: [
-        { name: "Fitment Service", icon: <Wrench className="h-5 w-5 mr-2" />, description: "Make your vehicle upgrade" },
-        { name: "Dashcam Installation", icon: <Camera className="h-5 w-5 mr-2" />, description: "Capture every driving moment" },
-        { name: "Seat Cover Installation", icon: <Sofa className="h-5 w-5 mr-2" />, description: "Upgrade your comfort and style" },
-        { name: "Multimedia System Installation", icon: <MonitorPlay className="h-5 w-5 mr-2" />, description: "Enhance your driving experience" },
-      ]
-    },
-    {
-      title: "General Repair Services",
-      services: [
-        { name: "Car Inspection", icon: <FileCheck className="h-5 w-5 mr-2" />, description: "Get your car inspected" },
-        { name: "Bike Express Services", icon: <Wrench className="h-5 w-5 mr-2" />, description: "Full bike service at your doorstep" },
-      ]
     }
+    // {
+    //   title: "Fitment Services",
+    //   services: [
+    //     { name: "Fitment Service", icon: <Wrench className="h-5 w-5 mr-2" />, description: "Make your vehicle upgrade" },
+    //     { name: "Dashcam Installation", icon: <Camera className="h-5 w-5 mr-2" />, description: "Capture every driving moment" },
+    //     { name: "Seat Cover Installation", icon: <Sofa className="h-5 w-5 mr-2" />, description: "Upgrade your comfort and style" },
+    //     { name: "Multimedia System Installation", icon: <MonitorPlay className="h-5 w-5 mr-2" />, description: "Enhance your driving experience" },
+    //   ]
+    // },
+    // {
+    //   title: "General Repair Services",
+    //   services: [
+    //     { name: "Car Inspection", icon: <FileCheck className="h-5 w-5 mr-2" />, description: "Get your car inspected" },
+    //     { name: "Bike Express Services", icon: <Wrench className="h-5 w-5 mr-2" />, description: "Full bike service at your doorstep" },
+    //   ]
+    // }
   ];
 
   return (
@@ -93,10 +93,10 @@ const Navigation = () => {
                     isActive("/services") ? "text-primary font-bold" : ""
                   }`}>Services</NavigationMenuTrigger>
                   <NavigationMenuContent>
-                    <div className="w-[800px] grid grid-cols-3 gap-4 p-4">
+                    <div className="w-[400px] p-4 bg-white rounded-lg shadow-lg">
                       {serviceCategories.map((category, i) => (
                         <div key={i} className="space-y-3">
-                          <h3 className="font-medium text-lg">{category.title}</h3>
+                          <h3 className="font-medium text-lg border-b pb-2">{category.title}</h3>
                           <ul className="space-y-2">
                             {category.services.map((service, j) => (
                               <li key={j}>
@@ -104,13 +104,13 @@ const Navigation = () => {
                                   <Link
                                     to={`/service-request?type=${service.name}`}
                                     className={cn(
-                                      "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                                      "flex items-center"
+                                      "block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                                      "flex items-center gap-2"
                                     )}
                                   >
                                     {service.icon}
                                     <div>
-                                      <div className="text-sm font-medium leading-none">{service.name}</div>
+                                      <div className="text-sm font-medium leading-none mb-1">{service.name}</div>
                                       <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
                                         {service.description}
                                       </p>
@@ -128,7 +128,7 @@ const Navigation = () => {
               </NavigationMenuList>
             </NavigationMenu>
 
-            <Link
+            {/* <Link
               to="/subscriptions"
               className={`px-3 py-2 rounded-md text-sm font-medium ${
                 isActive("/subscriptions") 
@@ -137,9 +137,9 @@ const Navigation = () => {
               }`}
             >
               Subscriptions
-            </Link>
+            </Link> */}
             
-            <Link
+            {/* <Link
               to="/cng-first"
               className={`px-3 py-2 rounded-md text-sm font-medium ${
                 isActive("/cng-first") 
@@ -149,9 +149,9 @@ const Navigation = () => {
             >
               <span className="text-blue-600">CNG</span>
               <span className="text-yellow-500">First</span>
-            </Link>
+            </Link> */}
             
-            <Link
+            {/* <Link
               to="/mec-plus"
               className={`px-3 py-2 rounded-md text-sm font-medium ${
                 isActive("/mec-plus") 
@@ -160,9 +160,9 @@ const Navigation = () => {
               }`}
             >
               Mec+
-            </Link>
+            </Link> */}
             
-            <Link
+            {/* <Link
               to="/about"
               className={`px-3 py-2 rounded-md text-sm font-medium ${
                 isActive("/about") 
@@ -171,7 +171,7 @@ const Navigation = () => {
               }`}
             >
               About
-            </Link>
+            </Link> */}
 
             <Link
               to="/dashboard"
@@ -231,18 +231,31 @@ const Navigation = () => {
               Home
             </Link>
 
-            <Link
-              to="/services"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive("/services") 
-                  ? "bg-primary-foreground text-primary" 
-                  : "hover:bg-primary-foreground/10"
-              }`}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Services
-            </Link>
-            
+            {/* New Mobile Services Menu */}
+            <div className="space-y-4">
+              {serviceCategories.map((category, i) => (
+                <div key={i} className="space-y-2">
+                  <h3 className="font-medium text-lg px-3">{category.title}</h3>
+                  <div className="space-y-1">
+                    {category.services.map((service, j) => (
+                      <Link
+                        key={j}
+                        to={`/service-request?type=${service.name}`}
+                        className="flex items-center px-3 py-2 rounded-md text-sm hover:bg-primary-foreground/10"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {service.icon}
+                        <div>
+                          <div className="font-medium">{service.name}</div>
+                          <p className="text-xs text-gray-500">{service.description}</p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
             <Link
               to="/dashboard"
               className={`px-3 py-2 rounded-md text-sm font-medium ${
