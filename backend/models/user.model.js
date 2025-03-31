@@ -61,9 +61,6 @@ const UserSchema = new mongoose.Schema({
   other_contact: {
     type: [
       {
-        name: String,
-        relation: String,
-        number: {
           type: String,
           validate: {
             validator: function (v) {
@@ -71,7 +68,6 @@ const UserSchema = new mongoose.Schema({
             },
             message: "Contact number must be 10 digits",
           },
-        },
       },
     ],
     validate: {

@@ -1,8 +1,8 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, ServiceProvider } from '../types';
 import { mockUsers, mockServiceProviders } from '../lib/mockData';
 import { toast } from "@/lib/toast";
+import axios from "axios";
 
 // Define different types for users and service providers
 type UserAuthUser = User & {
@@ -43,37 +43,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
     try {
-      // In a real app, this would be an API call
-      // For now, we'll use mock data
-
-      // Check if it's a normal user
-      const user = mockUsers.find(u => u.email === email);
-      if (user) {
-        const authUser: UserAuthUser = {
-          ...user,
-          userType: 'user'
-        };
-        setCurrentUser(authUser);
-        localStorage.setItem('currentUser', JSON.stringify(authUser));
+      const response = await axios.post('http://localhost:8080/auth/login', 
+        { email, password },
+        { withCredentials: true }
+      );
+      
+      if (response.data.success) {
+        setCurrentUser(response.data.data.user);
         toast.success("Logged in successfully!");
-        return;
+      } else {
+        throw new Error(response.data.message || "Login failed");
       }
-
-      // Check if it's a service provider
-      const provider = mockServiceProviders.find(p => p.email === email);
-      if (provider) {
-        const authUser: ServiceProviderAuthUser = {
-          ...provider,
-          userType: 'service_provider'
-        };
-        setCurrentUser(authUser);
-        localStorage.setItem('currentUser', JSON.stringify(authUser));
-        toast.success("Logged in successfully!");
-        return;
-      }
-
-      throw new Error("Invalid email or password");
     } catch (error) {
+      console.error("Login error:", error);
       toast.error("Login failed: " + (error as Error).message);
       throw error;
     } finally {
@@ -84,35 +66,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const register = async (userData: Partial<User>): Promise<void> => {
     setIsLoading(true);
     try {
-      // In a real app, this would be an API call to create a user
-      // For now, we'll just create a mock user and "log them in"
-      if (!userData.email || !userData.name || !userData.mobile || !userData.location) {
-        throw new Error("Missing required fields");
-      }
-
-      const newUser: User = {
-        id: Math.random().toString(36).substring(2, 15),
-        email: userData.email,
+      // The API call is now handled in the Register component
+      // But we need to set the user state after successful registration
+      setCurrentUser({
+        id: userData.id, // This would come from the backend response
         name: userData.name,
-        mobile: userData.mobile,
-        location: userData.location,
-        latlon: userData.latlon || {
-          lat: 0,
-          lon: 0
-        },
+        email: userData.email,
+        userType: 'user',
+        location: userData.location || { state: '', district: '', city: '' },
+        mobile: userData.mobile || '',
+        latlon: userData.latlon || { lat: 0, lon: 0 },
         other_contact: userData.other_contact || []
-      };
-
-      const authUser: UserAuthUser = {
-        ...newUser,
-        userType: 'user'
-      };
-
-      // In a real app, we would save the user to the database
-      setCurrentUser(authUser);
-      localStorage.setItem('currentUser', JSON.stringify(authUser));
+      } as UserAuthUser);
       toast.success("Registration successful!");
     } catch (error) {
+      console.error("Error in register context:", error);
       toast.error("Registration failed: " + (error as Error).message);
       throw error;
     } finally {
@@ -155,9 +123,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = () => {
+    // try {
+    //   await axios.post('http://localhost:8080/auth/logout', {}, { withCredentials: true });
+    //   setCurrentUser(null);
+    //   toast.success("Logged out successfully!");
+    // } catch (error) {
+    //   console.error("Logout error:", error);
+    //   throw error;
+    // }
     setCurrentUser(null);
     localStorage.removeItem('currentUser');
-    toast.success("Logged out successfully!");
+    toast.success('Logged out successfully!');
   };
 
   return (
