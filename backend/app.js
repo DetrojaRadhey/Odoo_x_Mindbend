@@ -60,10 +60,10 @@ async function main() {
 // app.use(express.static("public")); // Serve static files
 
 const authRoutes = require("./routes/auth.route");
-
+const emergencyRoutes = require("./routes/emergency.route");
 
 app.use("/auth", authRoutes);
-
+app.use("/emergency", emergencyRoutes);
 
 app.listen(port, () => {
   console.log(`port is listing in ${port}`);
