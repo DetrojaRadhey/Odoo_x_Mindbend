@@ -14,8 +14,8 @@ export interface ServiceProvider {
     address: string;
   };
   latlon: {
-    lat: number;
-    lon: number;
+    latitude: number;
+    longitude: number;
   };
   rating: number;
   service_count: number;
@@ -35,8 +35,8 @@ export interface User {
     address?: string;  // Added address field
   };
   latlon: {
-    lat: number;
-    lon: number;
+    latitude: number;
+    longitude: number;
   };
   other_contact: string[];
   password?: string; // For authentication

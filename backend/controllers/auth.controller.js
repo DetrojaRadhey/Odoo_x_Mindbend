@@ -24,7 +24,7 @@ exports.register = async (req, res) => {
     if (existingUser) {
       return responseFormatter(res, 400, false, "User already exists");
     }
-
+    
     // Create new user with plain text password
     const user = new User({
       email,

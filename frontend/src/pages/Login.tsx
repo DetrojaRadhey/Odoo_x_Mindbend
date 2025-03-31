@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import axios from "axios";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -20,18 +20,38 @@ const Login = () => {
     event.preventDefault();
     setLoading(true);
     try {
-      await login(email, password);
-      toast({
-        title: "Success",
-        description: "You've been logged in!",
-        variant: "default",
-      });
-      navigate("/");
+      const response = await axios.post('http://localhost:8080/auth/login', 
+        { email, password },
+        { withCredentials: true }
+      );
+      
+      if (response.data.success) {
+        await login(email, password);
+        
+        toast({
+          title: "Success",
+          description: "You've been logged in!",
+          variant: "default",
+        });
+        navigate("/");
+      } else {
+        toast({
+          title: "Error",
+          description: response.data.message || "Failed to log in",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error(error);
+      let errorMessage = "Failed to log in. Please check your credentials.";
+      
+      if (axios.isAxiosError(error) && error.response) {
+        errorMessage = error.response.data.message || errorMessage;
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to log in. Please check your credentials.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

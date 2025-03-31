@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link, Navigate } from "react-router-dom";
 import { toast } from "@/lib/toast";
+import axios from "axios";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -15,8 +15,7 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [userLocation, setUserLocation] = useState<{lat: number, lon: number} | null>(null);
-
+  const [userLocation, setUserLocation] = useState<{latitude: number, longitude: number} | null>(null);
   // Location details
   const [state, setState] = useState("");
   const [district, setDistrict] = useState("");
@@ -33,8 +32,8 @@ const Register = () => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setUserLocation({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
           });
           setLocationStatus('success');
           toast.success("Location obtained successfully!");
@@ -85,7 +84,8 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      await register({
+      // Create a formatted location object that matches the backend expectations
+      const userData = {
         name,
         email,
         password,
@@ -96,12 +96,32 @@ const Register = () => {
           city,
           address
         },
-        latlon: userLocation,
+        latlon: {
+          latitude: userLocation.latitude,
+          longitude: userLocation.longitude
+        },
         other_contact: otherContacts
+      };
+      // Make API call to backend using axios
+      const response = await axios.post('http://localhost:8080/auth/signup', userData, {
+        withCredentials: true // Important for cookies to be sent/received
       });
+
+      if (response.data.success) {
+        toast.success("Registration successful!");
+        // The register function from the auth context should now handle the user state
+        await register(userData);
+      } else {
+        toast.error(response.data.message || "Registration failed");
+      }
     } catch (error) {
       console.error("Registration error:", error);
-      toast.error("Registration failed: " + (error as Error).message);
+      if (axios.isAxiosError(error) && error.response) {
+        // Handle server error responses
+        toast.error("Registration failed: " + (error.response.data.message || error.message));
+      } else {
+        toast.error("Registration failed: " + (error as Error).message);
+      }
     } finally {
       setIsLoading(false);
     }
