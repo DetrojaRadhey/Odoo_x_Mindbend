@@ -1,13 +1,12 @@
-
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 import UserDashboard from "@/components/UserDashboard";
 import ServiceProviderDashboard from "@/components/ServiceProviderDashboard";
+import AdminDashboard from "@/components/AdminDashboard";
 
 const Dashboard = () => {
   const { currentUser } = useAuth();
-  
   // Redirect if not logged in
   if (!currentUser) {
     return <Navigate to="/login" replace />;
@@ -25,8 +24,10 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {currentUser.userType === 'user' ? (
+        {currentUser.role === 'user' ? (
           <UserDashboard />
+        ) : currentUser.role === 'admin' ? (
+          <AdminDashboard />
         ) : (
           <ServiceProviderDashboard />
         )}

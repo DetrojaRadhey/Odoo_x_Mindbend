@@ -1,25 +1,29 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, ServiceProvider } from '../types';
+import { User, ServiceProvider, Admin, AuthUserType } from '../types';
 import { mockUsers, mockServiceProviders } from '../lib/mockData';
 import { toast } from "@/lib/toast";
 import axios from "axios";
 
 // Define different types for users and service providers
 type UserAuthUser = User & {
-  userType: 'user';
+  role: 'user';
 };
 
 type ServiceProviderAuthUser = ServiceProvider & {
-  userType: 'service_provider';
+  role: 'service_provider';
+};
+
+type AdminAuthUser = Admin & {
+  role: 'admin';
 };
 
 // Combined type
-type AuthUser = UserAuthUser | ServiceProviderAuthUser;
+type AuthUser = UserAuthUser | ServiceProviderAuthUser | AdminAuthUser;
 
 interface AuthContextType {
   currentUser: AuthUser | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, role: AuthUserType) => Promise<void>;
   logout: () => void;
   register: (userData: Partial<User>) => Promise<void>;
   updateUserProfile: (userData: Partial<User>) => Promise<void>;
@@ -35,12 +39,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Check if a user is already logged in (from localStorage)
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        // Validate that role exists and is valid
+        if (!parsedUser.role || !['user', 'service_provider', 'admin'].includes(parsedUser.role)) {
+          console.warn('Invalid user data in localStorage, logging out');
+          localStorage.removeItem('currentUser');
+          setCurrentUser(null);
+        } else {
+          setCurrentUser(parsedUser);
+        }
+      } catch (e) {
+        console.error('Error parsing user from localStorage', e);
+        localStorage.removeItem('currentUser');
+      }
     }
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<void> => {
+  const login = async (email: string, password: string, role: AuthUserType): Promise<void> => {
     setIsLoading(true);
     try {
       const response = await axios.post('http://localhost:8080/auth/login', 
@@ -49,7 +66,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       );
       
       if (response.data.success) {
-        setCurrentUser(response.data.data.user);
+        const userData = response.data.data.user;
+        
+        // Make sure role is explicitly set here
+        const authUser: AuthUser = {
+          ...userData,
+          role: role, // Explicitly set role to match the parameter
+        } as AuthUser;
+        console.log(authUser);
+        
+        setCurrentUser(authUser);
+        localStorage.setItem('currentUser', JSON.stringify(authUser));
         toast.success("Logged in successfully!");
       } else {
         throw new Error(response.data.message || "Login failed");
@@ -72,7 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         id: userData.id, // This would come from the backend response
         name: userData.name,
         email: userData.email,
-        userType: 'user',
+        role: 'user',
         location: userData.location || { state: '', district: '', city: '' },
         mobile: userData.mobile || '',
         latlon: userData.latlon || { lat: 0, lon: 0 },
@@ -95,8 +122,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error("No user is logged in");
       }
       
-      if (currentUser.userType !== 'user') {
-        throw new Error("Only regular users can update their profile");
+      if (currentUser.role === 'admin') {
+        throw new Error("Admin profile updates are not supported");
       }
       
       // Since we've checked that currentUser.userType is 'user',
