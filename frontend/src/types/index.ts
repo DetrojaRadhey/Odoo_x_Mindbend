@@ -1,8 +1,8 @@
-
 export interface ServiceProvider {
   id: string;
   type: "Private hospital" | "Mechanical";
   name: string;
+  role: "service_provider";
   contact: {
     mobile: string[];
     email: string;
@@ -28,6 +28,7 @@ export interface User {
   email: string;
   name: string;
   mobile: string;
+  role: "user";
   location: {
     state: string;
     district: string;
@@ -103,3 +104,19 @@ export interface Review {
   comment: string;
   created_at: Date;
 }
+
+export interface Admin {
+  id: string;
+  name: string;
+  email: string;
+  role: "admin";
+  password?: string; // Optional since we don't want to expose it in frontend
+}
+
+// Update the existing types to include admin
+type AdminAuthUser = Admin & {
+  role: 'admin';
+};
+
+// Add this to your existing types
+export type AuthUserType = 'user' | 'service_provider' | 'admin';
