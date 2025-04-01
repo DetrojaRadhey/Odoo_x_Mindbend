@@ -8,10 +8,11 @@ require("dotenv").config();
 
 // Generate JWT token
 const generateToken = (user) => {
-  return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    // expiresIn: process.env.JWT_EXPIRES_IN,
-  });
-};
+    const secret = process.env.JWT_SECRET || "fallback_secret_key_for_development";
+    return jwt.sign({ id: user._id }, secret, {
+      // expiresIn: process.env.JWT_EXPIRES_IN,
+    });
+  };
 
 // Register a new user
 exports.register = async (req, res) => {
@@ -80,7 +81,7 @@ exports.login = async (req, res) => {
     let role;
 
     // Check in User model first
-    user = await User.findOne({ email });
+    user = await User.findOne({email});
     if (user) {
       role = 'user';
     }

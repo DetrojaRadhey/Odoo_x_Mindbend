@@ -25,5 +25,4 @@ const emergencySchema = new mongoose.Schema({
     ref: "ServiceProvider",
   },
 });
-emergencySchema.index({ latlon: "2dsphere" });
 module.exports = mongoose.model("Emergency", emergencySchema);
