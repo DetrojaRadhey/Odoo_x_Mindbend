@@ -46,7 +46,7 @@ export interface User {
 export type RequestStatus = "pending" | "accepted" | "closed";
 
 export type RequestTitle = 
-  | "Roadside Assistance Towing" 
+  | "Towing" 
   | "Flat-Tyre" 
   | "Battery-Jumpstart" 
   | "Starting Problem" 

@@ -38,7 +38,7 @@ exports.createRequest = async (req, res) => {
 
     // Validate title
     const validTitles = [
-      "Roadside Assistance",
+      // "Roadside Assistance",
       "Towing",
       "Flat-Tyre",
       "Battery-Jumpstart",
