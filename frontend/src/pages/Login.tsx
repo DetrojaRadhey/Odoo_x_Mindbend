@@ -24,9 +24,10 @@ const Login = () => {
         { email, password },
         { withCredentials: true }
       );
+      console.log(response);
       
       if (response.data.success) {
-        await login(email, password);
+        await login(email, password, response.data.data.user.role);
         
         toast({
           title: "Success",
