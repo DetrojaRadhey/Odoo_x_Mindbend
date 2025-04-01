@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { useData } from "@/contexts/DataContext";
 import { RequestTitle } from "@/types";
 import { toast } from "@/lib/toast";
 import { Loader2 } from "lucide-react";
+import axios from 'axios';
 
 const vehicleTypes = ["bike", "car"];
 
@@ -74,17 +74,28 @@ const CreateServiceRequest = () => {
     
     setIsSubmitting(true);
     try {
-      await createServiceRequest({
-        title,
-        describe_problem: problem,
-        latlon: location,
-        vehical_info: {
-          type: vehicleType as "bike" | "car",
-          name: vehicleName,
-          number: vehicleNumber
+      const response = await axios.post(
+        'http://localhost:8080/request/createRequest',
+        {
+          latitude: location.lat,
+          longitude: location.lon,
+          title: title,
+          describe_problem: problem,
+          vehical_info: {
+            type: vehicleType,
+            name: vehicleName,
+            number: vehicleNumber
+          },
+          advance: 0 // Optional field, setting default to 0
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+          }
         }
-      });
-      
+      );
+
       toast.success("Service request created successfully!");
       
       // Close the dialog automatically
@@ -93,7 +104,11 @@ const CreateServiceRequest = () => {
         (closeButton as HTMLButtonElement).click();
       }
     } catch (error) {
-      toast.error("Failed to create service request: " + (error as Error).message);
+      if (axios.isAxiosError(error)) {
+        toast.error("Failed to create service request: " + (error.response?.data?.message || error.message));
+      } else {
+        toast.error("Failed to create service request: " + (error as Error).message);
+      }
     } finally {
       setIsSubmitting(false);
     }
