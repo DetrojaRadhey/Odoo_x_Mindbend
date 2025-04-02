@@ -5,9 +5,11 @@ const emergencyController = require("../controllers/emergency.controller");
 
 router.post("/save-emergency", emergencyController.saveemergency);
 router.get("/show-emergency", emergencyController.showreqtohos);
-router.get("/accept-emergency", emergencyController.acceptEmergency);
+router.post("/accept-emergency", emergencyController.acceptEmergency);
 router.get("/get-accepted-emergency", emergencyController.getAcceptedEmergency);
 router.post("/mark-as-done", emergencyController.markEmergencyAsDone);
 router.get("/done-emergencies", emergencyController.getDoneRequests);
+router.get("/user-emergencies", emergencyController.getUserEmergencyRequests);
+router.delete("/delete-emergency/:requestId", emergencyController.deleteEmergencyRequest);
 
 module.exports = router;
