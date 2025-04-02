@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useData } from "@/contexts/DataContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { ServiceRequest, EmergencyRequest } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import RequestDetailsCard from "@/components/RequestDetailsCard";
 import { MapPin, AlertTriangle, CheckCircle2, X } from "lucide-react";
+import axios from "axios";
 
 const ServiceProviderDashboard = () => {
   const { 
@@ -20,6 +20,8 @@ const ServiceProviderDashboard = () => {
   
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequest | null>(null);
   const [selectedEmergency, setSelectedEmergency] = useState<EmergencyRequest | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const requests = getServiceProviderRequests();
   const emergencyRequests = getServiceProviderEmergencyRequests();
@@ -30,6 +32,37 @@ const ServiceProviderDashboard = () => {
   
   const acceptedEmergencyRequests = emergencyRequests.filter(req => req.status === "accepted");
   const closedEmergencyRequests = emergencyRequests.filter(req => req.status === "closed");
+
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+
+  const fetchPendingRequests = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await axios.get('http://localhost:8080/request/provider/requests', {
+        withCredentials: true
+      });
+      console.log(response);
+      
+      if (response.data.success) {
+        setPendingRequests(response.data.data.requests);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message || 'Failed to fetch pending requests');
+      } else {
+        setError('An unexpected error occurred');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleTabClick = (value: string) => {
+    if (value === 'pending') {
+      fetchPendingRequests();
+    }
+  };
   
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleString();
@@ -48,6 +81,7 @@ const ServiceProviderDashboard = () => {
   };
   
   return (
+    <>
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="md:col-span-1">
@@ -123,62 +157,123 @@ const ServiceProviderDashboard = () => {
         </Card>
       </div>
       
-      <Tabs defaultValue="active" className="w-full">
+      <Tabs defaultValue="active" className="w-full" onValueChange={handleTabClick}>
         <TabsList className="grid grid-cols-3 mb-4">
-          <TabsTrigger value="pending">Pending Requests</TabsTrigger>
+          <TabsTrigger value="pending" className="cursor-pointer">
+            {isLoading ? "Loading..." : "Pending Requests"}
+            {error && <span className="text-red-500 ml-2">!</span>}
+          </TabsTrigger>
           <TabsTrigger value="active">Active Requests</TabsTrigger>
           <TabsTrigger value="completed">Completed</TabsTrigger>
         </TabsList>
         
         <TabsContent value="pending" className="space-y-4">
-          {requests.filter(req => req.status === "pending").length === 0 ? (
+          {isLoading ? (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <p className="text-muted-foreground">Loading pending requests...</p>
+              </CardContent>
+            </Card>
+          ) : error ? (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <p className="text-red-500">{error}</p>
+              </CardContent>
+            </Card>
+          ) : pendingRequests.length === 0 ? (
             <Card>
               <CardContent className="p-6 text-center">
                 <p className="text-muted-foreground">No pending service requests</p>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {requests
-                .filter(req => req.status === "pending")
-                .map(request => (
-                  <Card key={request.id} className="overflow-hidden">
-                    <CardHeader className="bg-blue-50 pb-2">
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="text-lg">{request.title}</CardTitle>
-                        <Badge variant="secondary">
-                          New
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-4">
-                      <p className="line-clamp-2 text-sm mb-2">{request.describe_problem}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {pendingRequests.map((request) => (
+                <Card key={request.id} className="overflow-hidden">
+                  <CardHeader className="bg-blue-50 pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg">{request.title}</CardTitle>
+                      <Badge variant="secondary">New</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-4 space-y-4">
+                    {/* Problem Description */}
+                    <div>
+                      <h4 className="font-medium text-sm mb-1">Problem Description</h4>
+                      <p className="text-sm text-muted-foreground">{request.describe_problem}</p>
+                    </div>
+
+                    {/* Vehicle Information */}
+                    <div>
+                      <h4 className="font-medium text-sm mb-1">Vehicle Information</h4>
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         <div>
-                          <p className="font-medium text-xs text-muted-foreground">Vehicle</p>
-                          <p>{request.vehical_info.type} - {request.vehical_info.name}</p>
+                          <p className="text-muted-foreground">Type</p>
+                          <p>{request.vehical_info.type}</p>
                         </div>
                         <div>
-                          <p className="font-medium text-xs text-muted-foreground">Location</p>
-                          <p>{request.user.location.city}</p>
+                          <p className="text-muted-foreground">Name</p>
+                          <p>{request.vehical_info.name}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Number</p>
+                          <p>{request.vehical_info.number}</p>
                         </div>
                       </div>
-                    </CardContent>
-                    <CardFooter className="border-t pt-3">
-                      <Button 
-                        className="w-full"
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedRequest(request);
-                          setSelectedEmergency(null);
-                        }}
-                      >
-                        View Details
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))
-              }
+                    </div>
+
+                    {/* User Information */}
+                    <div>
+                      <h4 className="font-medium text-sm mb-1">User Information</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Name</p>
+                          <p>{request.user.name}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Email</p>
+                          <p>{request.user.email}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Mobile</p>
+                          <p>{request.user.mobile}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Location</p>
+                          <p>{request.user.location.city}, {request.user.location.district}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Location Coordinates */}
+                    <div>
+                      <h4 className="font-medium text-sm mb-1">Location Coordinates</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Latitude</p>
+                          <p>{request.latlon.coordinates[1]}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Longitude</p>
+                          <p>{request.latlon.coordinates[0]}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                  {/* <CardFooter className="border-t pt-3">
+                    <Button 
+                      className="w-full"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedRequest(request);
+                        setSelectedEmergency(null);
+                      }}
+                    >
+                      View Details
+                    </Button>
+                  </CardFooter> */}
+                </Card>
+              ))}
             </div>
           )}
         </TabsContent>
@@ -402,6 +497,7 @@ const ServiceProviderDashboard = () => {
         </Dialog>
       )}
     </div>
+    </>
   );
 };
 

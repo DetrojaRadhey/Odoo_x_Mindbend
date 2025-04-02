@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User, Phone, Mail, MapPin, Star } from "lucide-react";
+import axios from "axios";
 
 interface ServiceProviderContact {
   mobile: string;
@@ -9,6 +10,7 @@ interface ServiceProviderContact {
 
 interface ServiceProvider {
   _id: string;
+  type: string;
   name: string;
   contact: ServiceProviderContact;
   location: {
@@ -20,12 +22,45 @@ interface ServiceProvider {
   isAvailable?: boolean;
 }
 
+interface VehicleInfo {
+  type: "bike" | "car";
+  number: string;
+  name: string;
+}
+
 interface ShowServiceProviderProps {
   providers: ServiceProvider[];
   title?: string;
+  requestVehicle?: VehicleInfo;
+  serviceId?: string;
 }
 
-export default function ShowServiceProvider({ providers, title = "Service Providers" }: ShowServiceProviderProps) {
+export default function ShowServiceProvider({ providers, title = "Service Providers", requestVehicle, serviceId }: ShowServiceProviderProps) {
+  const handleMakeRequest = async (providerId: string) => {
+    try {
+      const response = await axios.post('http://localhost:8080/request/accept-provider', {
+        serviceId,
+        providerId
+      }, {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        // Handle success (you might want to show a success message or redirect)
+        console.log('Provider accepted successfully');
+      } else {
+        // Handle error
+        console.error('Failed to accept provider:', response.data.message);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('Error accepting provider:', error.response?.data?.message || error.message);
+      } else {
+        console.error('Error accepting provider:', error);
+      }
+    }
+  };
+
   if (!providers || providers.length === 0) {
     return null;
   }
@@ -37,7 +72,9 @@ export default function ShowServiceProvider({ providers, title = "Service Provid
         {providers.map((provider) => (
           <Card key={provider._id} className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-semibold">{provider.name}</CardTitle>
+              <CardTitle className="text-lg font-semibold">
+                {provider.type} - {provider.name}
+              </CardTitle>
               {provider.isAvailable !== undefined && (
                 <Badge variant={provider.isAvailable ? "default" : "destructive"}>
                   {provider.isAvailable ? "Available" : "Unavailable"}
@@ -46,6 +83,24 @@ export default function ShowServiceProvider({ providers, title = "Service Provid
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
+                {/* Service ID Display */}
+                {serviceId && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium">Service ID:</span>
+                    <span className="text-sm text-gray-600">{serviceId}</span>
+                  </div>
+                )}
+
+                {/* Vehicle Information */}
+                {requestVehicle && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium">Vehicle:</span>
+                    <span className="text-sm">
+                      {requestVehicle.name} ({requestVehicle.number})
+                    </span>
+                  </div>
+                )}
+
                 {/* Contact Information */}
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
@@ -73,6 +128,14 @@ export default function ShowServiceProvider({ providers, title = "Service Provid
                     <span className="text-sm">{provider.rating.toFixed(1)}</span>
                   </div>
                 )}
+              </div>
+              <div className="flex justify-end mt-4">
+                <button 
+                  onClick={() => handleMakeRequest(provider._id)}
+                  className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition"
+                >
+                  Make Request
+                </button>
               </div>
             </CardContent>
           </Card>

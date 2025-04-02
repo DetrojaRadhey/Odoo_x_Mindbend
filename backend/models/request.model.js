@@ -42,6 +42,7 @@ const requestSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "ServiceProvider",
   }],
+  selected_provider:{type:mongoose.Schema.Types.ObjectId,ref:"ServiceProvider"},
   advance: Number,
 });
 

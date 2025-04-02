@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useData } from "@/contexts/DataContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,6 +27,7 @@ const UserDashboard = () => {
   
   // Get user requests
   const requests = getUserRequests();
+  
   const emergencyRequests = getUserEmergencyRequests();
   
   const formatDate = (date: Date) => {
@@ -60,7 +60,7 @@ const UserDashboard = () => {
                 <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
                   <Car className="h-6 w-6 text-blue-500" />
                 </div>
-                <p className="text-2xl font-bold">{activeRequests}</p>
+                <p className="text-2xl font-bold">{requests.length}</p>
                 <p className="text-sm text-muted-foreground">Active Service Requests</p>
               </CardContent>
             </Card>
@@ -141,12 +141,6 @@ const UserDashboard = () => {
         <TabsContent value="active" className="space-y-4">
           {requests.filter(req => req.status !== "closed").length === 0 ? (
             <Card>
-              {/* <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">No active service requests</p>
-                <Button className="mt-4" variant="outline" onClick={() => document.querySelector('dialog')?.showModal()}>
-                  Create New Request
-                </Button>
-              </CardContent> */}
               <ShowRequestCard />
             </Card>
           ) : (

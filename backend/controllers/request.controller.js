@@ -72,7 +72,7 @@ exports.createRequest = async (req, res) => {
         }
       }
     }).select('name contact location rating');
-    console.log(nearbyServiceProviders);
+    // console.log(nearbyServiceProviders);
 
     
     const allserviceproviders = []; 
@@ -80,8 +80,8 @@ exports.createRequest = async (req, res) => {
       for (const serviceProvider of nearbyServiceProviders) {
         allserviceproviders.push(serviceProvider._id);
       }
-      // console.log(allserviceproviders);
     }
+    // console.log(allserviceproviders);
 
     const request = new Request({
       latlon: {
@@ -98,6 +98,7 @@ exports.createRequest = async (req, res) => {
       status: "pending",
       user: userId,
       service_provider: allserviceproviders,
+      selected_provider: null,
       advance: advance || 0
     });
 
@@ -125,7 +126,7 @@ exports.getUserRequests = async (req, res) => {
   try {
     // Get token from either jwt_signup or jwt_login cookie
     const token = req.cookies.jwt_signup || req.cookies.jwt_login;
-    console.log(token);
+    // console.log(token);
     
     if (!token) {
       return responseFormatter(res, 401, false, "No token, authorization denied");
@@ -138,7 +139,7 @@ exports.getUserRequests = async (req, res) => {
     const requests = await Request.find({ user: userId })
       .populate('service_provider')
       .sort({ createdAt: -1 });
-    console.log(requests[0].service_provider);
+    // console.log(requests[0].service_provider);
     
     return responseFormatter(res, 200, true, "Requests retrieved successfully", { requests });
   } catch (err) {
@@ -266,40 +267,123 @@ exports.cancelRequest = async (req, res) => {
     return responseFormatter(res, 500, false, "Server error", null, err.message);
   }
 };
+exports.userAcceptedProvider = async (req, res) => {
+  try {
+    const token = req.cookies.jwt_signup || req.cookies.jwt_login;
+    if (!token) {
+      return responseFormatter(res, 401, false, "No token, authorization denied");
+    }
 
-// Get nearby pending requests (for service providers)
-// exports.getNearbyRequests = async (req, res) => {
-//   try {
-//     // Get token from either jwt_signup or jwt_login cookie
-//     const token = req.cookies.jwt_signup || req.cookies.jwt_login;
-//     if (!token) {
-//       return responseFormatter(res, 401, false, "No token, authorization denied");
-//     }
+    // Verify token and get user id
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+    const { serviceId, providerId } = req.body;
 
-//     // Verify token and get user role
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//     if (decoded.role !== 'service_provider') {
-//       return responseFormatter(res, 403, false, "Not authorized. Service providers only.");
-//     }
+    // Find the request
+    const request = await Request.findById(serviceId);
+    
+    if (!request) {
+      return responseFormatter(res, 404, false, "Request not found");
+    }
 
-//     const { latitude, longitude, maxDistance = 10000 } = req.query; // maxDistance in meters
+    // Check if the user owns this request
+    if (request.user.toString() !== userId) {
+      return responseFormatter(res, 403, false, "Not authorized to update this request");
+    }
 
-//     const requests = await Request.find({
-//       status: 'pending',
-//       latlon: {
-//         $near: {
-//           $geometry: {
-//             type: 'Point',
-//             coordinates: [parseFloat(longitude), parseFloat(latitude)]
-//           },
-//           $maxDistance: parseInt(maxDistance)
-//         }
-//       }
-//     }).populate('user', 'name mobile');
+    // Check if the request is still pending
+    if (request.status !== 'pending') {
+      return responseFormatter(res, 400, false, "Cannot update request after it has been accepted");
+    }
 
-//     return responseFormatter(res, 200, true, "Nearby requests retrieved successfully", { requests });
-//   } catch (err) {
-//     console.error("Get nearby requests error:", err);
-//     return responseFormatter(res, 500, false, "Server error", null, err.message);
-//   }
-// };
+    // Check if the provider is in the list of available providers
+    if (!request.service_provider.includes(providerId)) {
+      return responseFormatter(res, 400, false, "Selected provider is not available for this request");
+    }
+
+    // Update the request with selected provider and change status
+    const updatedRequest = await Request.findByIdAndUpdate(
+      serviceId,
+      {
+        $set: {
+          selected_provider: providerId,
+          status: 'accepted'
+        }
+      },
+      { new: true }
+    ).populate('selected_provider', 'name contact');
+    console.log(updatedRequest);
+    return responseFormatter(res, 200, true, "Provider accepted successfully", { request: updatedRequest });
+  } catch (err) {
+    console.error("Accept provider error:", err);
+    return responseFormatter(res, 500, false, "Server error", null, err.message);
+  }
+};
+
+exports.getRequestToServiceProvider = async (req, res) => {
+  try {
+    // Get token from either jwt_signup or jwt_login cookie
+    console.log("get request to service provider");
+    
+    const token = req.cookies.jwt_signup || req.cookies.jwt_login;
+    if (!token) {
+      return responseFormatter(res, 401, false, "No token, authorization denied");
+    }
+
+    // Verify token and get service provider id
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const serviceProviderId = decoded.id;
+
+    // Find all requests where this service provider is selected
+    const requests = await Request.find({
+      selected_provider: serviceProviderId  // This ensures we only get requests where this service provider is selected
+    })
+    .populate('user', 'name email mobile location latlon other_contact')
+    .populate('selected_provider', 'name contact location rating')
+    .sort({ createdAt: -1 });
+    console.log(requests);
+
+    // Format the requests to include all necessary information
+    const formattedRequests = requests.map(request => ({
+      id: request._id,
+      title: request.title,
+      describe_problem: request.describe_problem,
+      vehical_info: request.vehical_info,
+      status: request.status,
+      advance: request.advance,
+      createdAt: request.createdAt,
+      user: {
+        id: request.user._id,
+        name: request.user.name,
+        email: request.user.email,
+        mobile: request.user.mobile,
+        location: request.user.location,
+        latlon: request.user.latlon,
+        other_contact: request.user.other_contact
+      },
+      service_provider: {
+        id: request.selected_provider._id,
+        name: request.selected_provider.name,
+        contact: request.selected_provider.contact,
+        location: request.selected_provider.location,
+        rating: request.selected_provider.rating
+      },
+      latlon: request.latlon
+    }));
+    // console.log(formattedRequests);
+    // Group requests by status for better organization
+    const groupedRequests = {
+      pending: formattedRequests.filter(req => req.status === 'pending'),
+      accepted: formattedRequests.filter(req => req.status === 'accepted'),
+      closed: formattedRequests.filter(req => req.status === 'closed')
+    };
+
+    return responseFormatter(res, 200, true, "Service provider requests retrieved successfully", { 
+      requests: formattedRequests,
+      // totalRequests: requests.length
+    });
+  } catch (err) {
+    console.error("Get service provider requests error:", err);
+    return responseFormatter(res, 500, false, "Server error", null, err.message);
+  }
+};

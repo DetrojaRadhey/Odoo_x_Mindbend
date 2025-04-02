@@ -86,7 +86,9 @@ export default function ShowRequestCard() {
       navigate('/service-providers', { 
         state: { 
           providers: request.service_provider,
-          requestTitle: request.title
+          requestTitle: request.title,
+          requestVehicle: request.vehical_info,
+          serviceId: request._id
         }
       });
     }

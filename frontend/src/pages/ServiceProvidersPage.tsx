@@ -6,8 +6,8 @@ import { ArrowLeft } from "lucide-react";
 export default function ServiceProvidersPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { providers, requestTitle } = location.state || {};
-  console.log(providers);
+  const { providers, requestTitle, requestVehicle, serviceId } = location.state || {};
+  console.log("Service ID:", serviceId);
   
 
   if (!providers) {
@@ -47,6 +47,8 @@ export default function ServiceProvidersPage() {
       <ShowServiceProvider 
         providers={providers}
         title={`Service Providers for ${requestTitle}`}
+        requestVehicle={requestVehicle}
+        serviceId={serviceId}
       />
     </div>
   );
