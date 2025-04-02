@@ -10,6 +10,6 @@ router.get('/:id',  requestController.updateRequest);
 router.delete('/:id',  requestController.cancelRequest);
 
 // Service Provider routes
-router.get('/nearby',  requestController.getNearbyRequests);
+// router.get('/nearby',  requestController.getNearbyRequests);
 
 module.exports = router;

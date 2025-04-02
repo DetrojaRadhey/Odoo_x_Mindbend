@@ -12,6 +12,7 @@ import CreateEmergencyRequest from "@/components/CreateEmergencyRequest";
 import RequestDetailsCard from "@/components/RequestDetailsCard";
 import { AlertTriangle, Car, Clock, MapPin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import ShowRequestCard from "./ShowRequestCard";
 
 const UserDashboard = () => {
   const { currentUser } = useAuth();
@@ -140,12 +141,13 @@ const UserDashboard = () => {
         <TabsContent value="active" className="space-y-4">
           {requests.filter(req => req.status !== "closed").length === 0 ? (
             <Card>
-              <CardContent className="p-6 text-center">
+              {/* <CardContent className="p-6 text-center">
                 <p className="text-muted-foreground">No active service requests</p>
                 <Button className="mt-4" variant="outline" onClick={() => document.querySelector('dialog')?.showModal()}>
                   Create New Request
                 </Button>
-              </CardContent>
+              </CardContent> */}
+              <ShowRequestCard />
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

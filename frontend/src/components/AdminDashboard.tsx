@@ -158,16 +158,7 @@ const AdminDashboard = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="latitude">Latitude</Label>
-              <Input
-                id="latitude"
-                type="number"
-                step="any"
-                value={formData.latitude}
-                onChange={(e) => setFormData({...formData, latitude: e.target.value})}
-              />
-            </div>
+            
             <div className="space-y-2">
               <Label htmlFor="longitude">Longitude</Label>
               <Input
@@ -176,6 +167,16 @@ const AdminDashboard = () => {
                 step="any"
                 value={formData.longitude}
                 onChange={(e) => setFormData({...formData, longitude: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="latitude">Latitude</Label>
+              <Input
+                id="latitude"
+                type="number"
+                step="any"
+                value={formData.latitude}
+                onChange={(e) => setFormData({...formData, latitude: e.target.value})}
               />
             </div>
           </div>

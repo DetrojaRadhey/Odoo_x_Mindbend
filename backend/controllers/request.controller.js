@@ -1,4 +1,5 @@
 const Request = require("../models/request.model");
+const ServiceProvider = require("../models/serviceProvider.model");
 const { responseFormatter } = require("../utils/responseFormatter");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
@@ -18,8 +19,8 @@ exports.createRequest = async (req, res) => {
     const userId = decoded.id;
     
     const {
-      latitude,
       longitude,
+      latitude,
       title,
       describe_problem,
       vehical_info,
@@ -56,10 +57,36 @@ exports.createRequest = async (req, res) => {
       return responseFormatter(res, 400, false, "Invalid vehicle type. Must be 'bike' or 'car'");
     }
 
+    
+    
+    // Updated query for nearby service providers
+    const nearbyServiceProviders = await ServiceProvider.find({
+      isAvailable: true,
+      latlon: {
+        $nearSphere: {
+          $geometry: {
+            type: "Point",
+            coordinates: [lng, lat]
+          },
+          $maxDistance: 10000 // 10km in meters
+        }
+      }
+    }).select('name contact location rating');
+    console.log(nearbyServiceProviders);
+
+    
+    const allserviceproviders = []; 
+    if (nearbyServiceProviders.length > 0) {
+      for (const serviceProvider of nearbyServiceProviders) {
+        allserviceproviders.push(serviceProvider._id);
+      }
+      // console.log(allserviceproviders);
+    }
+
     const request = new Request({
       latlon: {
         type: "Point",
-        coordinates: [lng, lat] // longitude first, then latitude
+        coordinates: [lng, lat]
       },
       title,
       describe_problem,
@@ -68,14 +95,25 @@ exports.createRequest = async (req, res) => {
         number: vehical_info.number || "",
         name: vehical_info.name || ""
       },
-      status: "pending", // default value
+      status: "pending",
       user: userId,
+      service_provider: allserviceproviders,
       advance: advance || 0
     });
 
     await request.save();
+    // console.log(request);
+    
+    const populatedRequest = await Request.findById(request._id)
+      .populate('service_provider');
+    console.log(populatedRequest);
+    
+    return responseFormatter(res, 201, true, "Request created successfully", { 
+      request,
+      nearbyServiceProviders
+    });
 
-    return responseFormatter(res, 201, true, "Request created successfully", { request });
+
   } catch (err) {
     console.error("Create request error:", err);
     return responseFormatter(res, 500, false, "Server error", null, err.message);
@@ -87,6 +125,8 @@ exports.getUserRequests = async (req, res) => {
   try {
     // Get token from either jwt_signup or jwt_login cookie
     const token = req.cookies.jwt_signup || req.cookies.jwt_login;
+    console.log(token);
+    
     if (!token) {
       return responseFormatter(res, 401, false, "No token, authorization denied");
     }
@@ -96,9 +136,10 @@ exports.getUserRequests = async (req, res) => {
     const userId = decoded.id;
 
     const requests = await Request.find({ user: userId })
-      .populate('service_provider', 'name contact')
+      .populate('service_provider')
       .sort({ createdAt: -1 });
-
+    console.log(requests[0].service_provider);
+    
     return responseFormatter(res, 200, true, "Requests retrieved successfully", { requests });
   } catch (err) {
     console.error("Get user requests error:", err);
@@ -227,38 +268,38 @@ exports.cancelRequest = async (req, res) => {
 };
 
 // Get nearby pending requests (for service providers)
-exports.getNearbyRequests = async (req, res) => {
-  try {
-    // Get token from either jwt_signup or jwt_login cookie
-    const token = req.cookies.jwt_signup || req.cookies.jwt_login;
-    if (!token) {
-      return responseFormatter(res, 401, false, "No token, authorization denied");
-    }
+// exports.getNearbyRequests = async (req, res) => {
+//   try {
+//     // Get token from either jwt_signup or jwt_login cookie
+//     const token = req.cookies.jwt_signup || req.cookies.jwt_login;
+//     if (!token) {
+//       return responseFormatter(res, 401, false, "No token, authorization denied");
+//     }
 
-    // Verify token and get user role
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== 'service_provider') {
-      return responseFormatter(res, 403, false, "Not authorized. Service providers only.");
-    }
+//     // Verify token and get user role
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     if (decoded.role !== 'service_provider') {
+//       return responseFormatter(res, 403, false, "Not authorized. Service providers only.");
+//     }
 
-    const { latitude, longitude, maxDistance = 10000 } = req.query; // maxDistance in meters
+//     const { latitude, longitude, maxDistance = 10000 } = req.query; // maxDistance in meters
 
-    const requests = await Request.find({
-      status: 'pending',
-      latlon: {
-        $near: {
-          $geometry: {
-            type: 'Point',
-            coordinates: [parseFloat(longitude), parseFloat(latitude)]
-          },
-          $maxDistance: parseInt(maxDistance)
-        }
-      }
-    }).populate('user', 'name mobile');
+//     const requests = await Request.find({
+//       status: 'pending',
+//       latlon: {
+//         $near: {
+//           $geometry: {
+//             type: 'Point',
+//             coordinates: [parseFloat(longitude), parseFloat(latitude)]
+//           },
+//           $maxDistance: parseInt(maxDistance)
+//         }
+//       }
+//     }).populate('user', 'name mobile');
 
-    return responseFormatter(res, 200, true, "Nearby requests retrieved successfully", { requests });
-  } catch (err) {
-    console.error("Get nearby requests error:", err);
-    return responseFormatter(res, 500, false, "Server error", null, err.message);
-  }
-};
+//     return responseFormatter(res, 200, true, "Nearby requests retrieved successfully", { requests });
+//   } catch (err) {
+//     console.error("Get nearby requests error:", err);
+//     return responseFormatter(res, 500, false, "Server error", null, err.message);
+//   }
+// };

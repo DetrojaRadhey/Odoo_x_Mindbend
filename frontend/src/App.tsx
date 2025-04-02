@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +16,10 @@ import Payments from "./pages/Payments";
 import Profile from "./pages/Profile";
 import Navigation from "./components/Navigation";
 import ServiceRequest from "./pages/ServiceRequest";
+import AllProviders from "./pages/AllProviders";
+import ShowRequestCard from "./components/ShowRequestCard";
+import ServiceProvidersPage from "@/pages/ServiceProvidersPage";
+// import ShowServiceProvider from "./components/ShowServiceProvider";
 
 const queryClient = new QueryClient();
 
@@ -38,7 +41,11 @@ const App = () => (
               <Route path="/payments" element={<Payments />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/service-request" element={<ServiceRequest />} />
+              <Route path="/service-providers" element={<ServiceProvidersPage />} />
+              {/* <Route path="/show-provider" element={<ShowServiceProvider type={"Mechanical"} name={"jk"} mobile={"123456789"} email={"jk@gmail.com"} state={"karnataka"} district={"bangalore"} city={"bangalore"} rating={0} />} /> */}
+              <Route path = "/show-provider" element = {<AllProviders />} />
               <Route path="*" element={<NotFound />} />
+              <Route path="/show-request" element={<ShowRequestCard />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
