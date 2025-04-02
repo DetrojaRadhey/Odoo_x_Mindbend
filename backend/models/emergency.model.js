@@ -16,7 +16,7 @@ const emergencySchema = new mongoose.Schema({
  
   status: {
     type: String,
-    enum: ["pending", "accepted", "closed"],
+    enum: ["pending", "accepted", "closed","deleted_by_user"],
     default: "pending",
   },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -25,4 +25,5 @@ const emergencySchema = new mongoose.Schema({
     ref: "ServiceProvider",
   },
 });
+emergencySchema.index({ latlon: "2dsphere" });
 module.exports = mongoose.model("Emergency", emergencySchema);

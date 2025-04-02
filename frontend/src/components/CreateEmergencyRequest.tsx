@@ -1,147 +1,129 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { useData } from "@/contexts/DataContext";
-import { toast } from "@/lib/toast";
-import { DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
+import { emergencyService } from "@/services/emergency.service";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 const CreateEmergencyRequest = () => {
-  const { createEmergencyRequest } = useData();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [location, setLocation] = useState<{lat: number, lon: number} | null>(null);
-  
-  useEffect(() => {
-    // Get user's location when component mounts
-    if (navigator.geolocation) {
-      setLocationStatus('loading');
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLocation({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude
-          });
-          setLocationStatus('success');
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          setLocationStatus('error');
-          toast.error("Failed to get your location. Please allow location access.");
-        }
-      );
-    } else {
-      setLocationStatus('error');
-      toast.error("Geolocation is not supported by this browser.");
-    }
-  }, []);
-  
+  const { currentUser } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [location, setLocation] = useState({
+    latitude: "",
+    longitude: ""
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!location) {
-      toast.error("Unable to submit without location data.");
+    if (!currentUser?.id) {
+      toast.error("Please login to create an emergency request");
       return;
     }
-    
-    setIsSubmitting(true);
+
+    if (!location.latitude || !location.longitude) {
+      toast.error("Please provide both latitude and longitude");
+      return;
+    }
+
     try {
-      await createEmergencyRequest({
-        latlon: location
-      });
-      
-      toast.success("Emergency request created successfully!");
-      // Close the dialog automatically
-      const closeButton = document.querySelector('[data-state="open"] button.close-dialog');
-      if (closeButton) {
-        (closeButton as HTMLButtonElement).click();
+      setLoading(true);
+      const response = await emergencyService.saveEmergency(
+        parseFloat(location.latitude),
+        parseFloat(location.longitude),
+        currentUser.id
+      );
+
+      if (response.success) {
+        toast.success("Emergency request sent successfully");
+        // Close the dialog
+        const closeButton = document.querySelector('[data-dialog-close]');
+        if (closeButton instanceof HTMLElement) {
+          closeButton.click();
+        }
       }
     } catch (error) {
-      toast.error("Failed to create emergency request: " + (error as Error).message);
+      console.error("Error creating emergency request:", error);
+      toast.error("Failed to create emergency request");
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
-  
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocation({
+          latitude: position.coords.latitude.toString(),
+          longitude: position.coords.longitude.toString()
+        });
+        toast.success("Location fetched successfully");
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        toast.error("Failed to get your location");
+      }
+    );
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-      <div className="bg-emergency/10 border border-emergency rounded-lg p-4">
-        <h3 className="text-emergency font-medium mb-2">Important Notice</h3>
-        <p className="text-sm">
-          This will send an immediate emergency alert to nearby service providers.
-          Use this only for urgent situations requiring immediate assistance.
-        </p>
-        <p className="text-sm mt-2">
-          Your current location and contact information will be shared with service providers
-          who accept your emergency request.
-        </p>
-      </div>
-      
-      <div className="bg-secondary/50 rounded-lg p-4">
-        <div className="flex items-center mb-2">
-          <div className="w-3 h-3 rounded-full bg-emergency animate-pulse mr-2"></div>
-          <p className="font-medium">Your emergency contacts will be notified</p>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          A message will be sent to all emergency contacts registered in your profile.
-        </p>
-      </div>
-      
-      {locationStatus === 'loading' && (
-        <div className="flex items-center justify-center p-4">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mr-2" />
-          <p>Obtaining your location...</p>
-        </div>
-      )}
-      
-      {locationStatus === 'error' && (
-        <div className="bg-destructive/10 border border-destructive rounded-lg p-4 text-center">
-          <p className="text-sm">Unable to get your location. Please enable location services.</p>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <Label htmlFor="latitude">Latitude</Label>
           <Button 
             type="button" 
             variant="outline" 
-            className="mt-2"
-            onClick={() => {
-              setLocationStatus('loading');
-              navigator.geolocation.getCurrentPosition(
-                (position) => {
-                  setLocation({
-                    lat: position.coords.latitude,
-                    lon: position.coords.longitude
-                  });
-                  setLocationStatus('success');
-                  toast.success("Location obtained successfully!");
-                },
-                () => {
-                  setLocationStatus('error');
-                  toast.error("Failed to get your location.");
-                }
-              );
-            }}
+            size="sm"
+            onClick={getCurrentLocation}
           >
-            Try Again
+            Get Current Location
           </Button>
         </div>
-      )}
-      
-      {locationStatus === 'success' && (
-        <div className="bg-green-500/10 border border-green-500 rounded-lg p-4 text-center">
-          <p className="text-sm text-green-700">Location obtained successfully!</p>
-        </div>
-      )}
-      
-      <DialogFooter>
-        <Button type="button" variant="outline" className="close-dialog" data-dismiss="dialog">
-          Cancel
-        </Button>
-        <Button 
-          type="submit" 
-          variant="destructive" 
-          disabled={isSubmitting || locationStatus !== 'success'}
-        >
-          {isSubmitting ? "Submitting..." : "Send Emergency Alert"}
-        </Button>
-      </DialogFooter>
+        <Input
+          id="latitude"
+          type="text"
+          placeholder="Enter latitude"
+          value={location.latitude}
+          onChange={(e) => setLocation(prev => ({ ...prev, latitude: e.target.value }))}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="longitude">Longitude</Label>
+        <Input
+          id="longitude"
+          type="text"
+          placeholder="Enter longitude"
+          value={location.longitude}
+          onChange={(e) => setLocation(prev => ({ ...prev, longitude: e.target.value }))}
+          required
+        />
+      </div>
+
+      <Button 
+        type="submit" 
+        className="w-full" 
+        variant="destructive"
+        disabled={loading}
+      >
+        {loading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Sending Request...
+          </>
+        ) : (
+          "Send Emergency Request"
+        )}
+      </Button>
     </form>
   );
 };

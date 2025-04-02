@@ -1,46 +1,57 @@
 export interface ServiceProvider {
-  id: string;
-  type: "Private hospital" | "Mechanical";
+  _id: string;
   name: string;
-  role: "service_provider";
+  type: string;
+  rating: number;
   contact: {
-    mobile: string[];
+    mobile: string;
     email: string;
   };
   location: {
     state: string;
     district: string;
     city: string;
-    address: string;
   };
-  latlon: {
-    latitude: number;
-    longitude: number;
-  };
-  rating: number;
-  service_count: number;
-  password?: string; // For authentication
-  email: string; // For authentication
 }
 
 export interface User {
   id: string;
-  email: string;
   name: string;
   mobile: string;
-  role: "user";
   location: {
-    state: string;
-    district: string;
     city: string;
-    address?: string;  // Added address field
+    state: string;
+    coordinates?: [number, number];
   };
+}
+
+export interface ServiceRequest {
+  id: string;
+  title: string;
+  describe_problem: string;
+  vehical_info: {
+    type: string;
+    name: string;
+    number: string;
+  };
+  status: 'pending' | 'accepted' | 'closed' | 'deleted_by_user';
+  created_at: Date;
+  user: User;
+  service_provider?: ServiceProvider;
+}
+
+export interface EmergencyRequest {
+  _id?: string;
+  id: string;
+  status: 'pending' | 'accepted' | 'closed' | 'deleted_by_user';
+  user: User;
+  created_at: Date;
   latlon: {
-    latitude: number;
-    longitude: number;
+    type: 'Point';
+    coordinates: [number, number];
   };
-  other_contact: string[];
-  password?: string; // For authentication
+  service_provider?: ServiceProvider;
+  isEmergency?: boolean;
 }
 
 export type RequestStatus = "pending" | "accepted" | "closed";
@@ -53,37 +64,6 @@ export type RequestTitle =
   | "Key-Unlock-Assistance" 
   | "Fuel-Delivery" 
   | "Other";
-
-export interface ServiceRequest {
-  id: string;
-  latlon: {
-    lat: number;
-    lon: number;
-  };
-  title: RequestTitle;
-  describe_problem: string;
-  vehical_info: {
-    type: "bike" | "car";
-    number: string;
-    name: string;
-  };
-  status: RequestStatus;
-  user: User;
-  service_provider: ServiceProvider | null;
-  created_at: Date;
-}
-
-export interface EmergencyRequest {
-  id: string;
-  latlon: {
-    lat: number;
-    lon: number;
-  };
-  status: RequestStatus;
-  user: User;
-  service_provider: ServiceProvider | null;
-  created_at: Date;
-}
 
 export interface Payment {
   id: string;
