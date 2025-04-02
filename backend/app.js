@@ -63,12 +63,13 @@ const authRoutes = require("./routes/auth.route");
 const emergencyRoutes = require("./routes/emergency.route");
 const requestRoutes = require("./routes/request.route");
 const adminRoutes = require("./routes/admin.route");
+const userRoutes = require("./routes/user.route");
 
 app.use("/auth", authRoutes);
 app.use("/emergency", emergencyRoutes);
 app.use("/request", requestRoutes);
 app.use("/admin",adminRoutes);
-
+app.use("/api/users", userRoutes);
 
 app.listen(port, () => {
   console.log(`port is listing in ${port}`);

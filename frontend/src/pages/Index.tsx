@@ -25,7 +25,7 @@ const Index = () => {
       {/* Hero Section */}
       <section className="relative bg-yellow-100 text-black">
         <div className="container mx-auto px-6 py-24 md:py-32 flex flex-col md:flex-row items-center">
-          <div className="md:w-1/2 mb-8 md:mb-0">
+          <div className="md:w-1/2 mb-8 md:mb-0 ml-20">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
               Bike & Car <br />Repair Service
             </h1>
@@ -55,7 +55,7 @@ const Index = () => {
             <img 
               src="/images/home_banner.png" 
               alt="Roadside Assistance" 
-              className="w-[300px] max-w-md mx-auto rounded-lg"
+              className="w-[400px] max-w-md mx-auto rounded-lg right-20 bottom-0 absolute max-[380px]:static"
             />
           </div>
         </div>
@@ -71,13 +71,13 @@ const Index = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center">
-              <img src="https://via.placeholder.com/200x150" alt="Car" className="h-32 object-contain" />
+              <img src="/images/car.jpg" alt="Car" className="h-32 object-contain" />
             </div>
             <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center">
-              <img src="https://via.placeholder.com/200x150" alt="Bike" className="h-32 object-contain" />
+              <img src="/images/bike.jpg" alt="Bike" className="h-32 object-contain" />
             </div>
             <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center">
-              <img src="https://via.placeholder.com/200x150" alt="Van" className="h-32 object-contain" />
+              <img src="/images/van.jpg" alt="Van" className="h-32 object-contain" />
             </div>
           </div>
           
@@ -87,45 +87,7 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Business Verticals */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold mb-8 text-center">ReadyAssist Business Verticals</h2>
-          
-          <div className="flex flex-wrap justify-center gap-8">
-            <div className="flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
-                <Wrench className="w-8 h-8" />
-              </div>
-              <span className="text-sm">Roadside Assistance</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
-                <Car className="w-8 h-8" />
-              </div>
-              <span className="text-sm">Vehicle Service</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
-                <Truck className="w-8 h-8" />
-              </div>
-              <span className="text-sm">Service Truck</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
-                <Battery className="w-8 h-8" />
-              </div>
-              <span className="text-sm">Battery Service</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
-                <Disc2 className="w-8 h-8" />
-              </div>
-              <span className="text-sm">Tyre Service</span>
-            </div>
-          </div>
-        </div>
-      </section>
+      
       
       {/* Car Inspection Card */}
       <section className="py-12 bg-blue-900 text-white">
@@ -169,64 +131,43 @@ const Index = () => {
           </div>
         </div>
       </section>
-      
-      {/* Testimonials */}
-      <section className="py-16">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold mb-8 text-center">Hear From our Clients</h2>
-          
-          <div className="flex justify-center gap-8 flex-wrap">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="w-full md:w-64 bg-white shadow-md rounded-lg p-6">
-                <p className="text-gray-700 mb-4">"{testimonial.comment}"</p>
-                <p className="font-medium">{testimonial.name}</p>
-              </div>
-            ))}
-          </div>
-          
-          <div className="mt-12 flex flex-wrap justify-center">
-            <img src="https://via.placeholder.com/120x40" alt="Client Logo" className="h-8 mx-4 my-2" />
-            <img src="https://via.placeholder.com/120x40" alt="Client Logo" className="h-8 mx-4 my-2" />
-            <img src="https://via.placeholder.com/120x40" alt="Client Logo" className="h-8 mx-4 my-2" />
-            <img src="https://via.placeholder.com/120x40" alt="Client Logo" className="h-8 mx-4 my-2" />
-            <img src="https://via.placeholder.com/120x40" alt="Client Logo" className="h-8 mx-4 my-2" />
-          </div>
-        </div>
-      </section>
-      
-      {/* Service at home */}
+
+      {/* Business Verticals */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 mb-8 md:mb-0 md:pr-12">
-              <h2 className="text-2xl font-bold mb-4">Get your bike serviced without leaving your home!</h2>
-              <p className="text-gray-600 mb-6">
-                ReadyAssist is proud to be able to offer the convenience of in-home bike servicing and repairs. 
-                Our qualified technicians will come to your location with all the necessary tools and parts.
-              </p>
-              <Button className="bg-yellow-500 text-black hover:bg-yellow-400">Book Now</Button>
-            </div>
-            <div className="md:w-1/2">
-              <img 
-                src="https://via.placeholder.com/600x400" 
-                alt="Bike Service" 
-                className="rounded-lg shadow-md w-full" 
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Stats Section */}
-      <section className="py-8">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {stats.map((stat, index) => (
-              <div key={index} className="bg-black text-white p-4 rounded-lg text-center">
-                <p className="text-xl md:text-2xl font-bold">{stat.count}</p>
-                <p className="text-sm">{stat.label}</p>
+          <h2 className="text-3xl font-bold mb-8 text-center">ReadyAssist Business Verticals</h2>
+          
+          <div className="flex flex-wrap justify-center gap-8">
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
+                <Wrench className="w-8 h-8" />
               </div>
-            ))}
+              <span className="text-sm">Roadside Assistance</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
+                <Car className="w-8 h-8" />
+              </div>
+              <span className="text-sm">Vehicle Service</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
+                <Truck className="w-8 h-8" />
+              </div>
+              <span className="text-sm">Service Truck</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
+                <Battery className="w-8 h-8" />
+              </div>
+              <span className="text-sm">Battery Service</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
+                <Disc2 className="w-8 h-8" />
+              </div>
+              <span className="text-sm">Tyre Service</span>
+            </div>
           </div>
         </div>
       </section>
@@ -263,27 +204,6 @@ const Index = () => {
             <div className="grid grid-cols-2 gap-4">
               <img src="https://via.placeholder.com/300x200" alt="Service" className="rounded-lg shadow-md" />
               <img src="https://via.placeholder.com/300x200" alt="Service" className="rounded-lg shadow-md" />
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      {/* Subscription CTA */}
-      <section className="py-16 bg-gray-100">
-        <div className="container mx-auto px-6">
-          <div className="bg-white p-8 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-4">Get the chance to win a subscription package worth Rs. 1000!</h2>
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="md:w-2/3">
-                <input 
-                  type="email" 
-                  placeholder="Your Email" 
-                  className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-              <div className="md:w-1/3">
-                <Button className="w-full bg-green-600 hover:bg-green-700">Submit</Button>
-              </div>
             </div>
           </div>
         </div>

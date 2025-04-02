@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+
 import { useData } from "@/contexts/DataContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -7,9 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { ServiceRequest, EmergencyRequest } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import RequestDetailsCard from "@/components/RequestDetailsCard";
+
+// API base URL - should match your backend
+const API_URL = "http://localhost:8080";
+
 import { MapPin, AlertTriangle, CheckCircle2, X, Loader2 } from "lucide-react";
 import { emergencyService } from "@/services/emergency.service";
 import { toast } from "sonner";
+
 
 const ServiceProviderDashboard = () => {
   const { getServiceProviderRequests, updateServiceRequestStatus } = useData();
@@ -86,6 +93,7 @@ const ServiceProviderDashboard = () => {
           await fetchAllData(); // Refresh all data
         }
       } else {
+        // Handle service request completion with existing function
         await updateServiceRequestStatus(id, "closed");
       }
     } catch (error) {
@@ -278,8 +286,8 @@ const ServiceProviderDashboard = () => {
                         className="w-full"
                         variant="outline"
                         onClick={() => {
-                          setSelectedRequest(request);
-                          setSelectedEmergency(null);
+                          setSelectedEmergency(request);
+                          setSelectedRequest(null);
                         }}
                       >
                         View Details
@@ -411,25 +419,6 @@ const ServiceProviderDashboard = () => {
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter className="border-t pt-3 flex gap-2">
-                    <Button 
-                      className="flex-1"
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedRequest(request);
-                        setSelectedEmergency(null);
-                      }}
-                    >
-                      Details
-                    </Button>
-                    <Button 
-                      className="flex-1"
-                      variant="default"
-                      onClick={() => handleCloseRequest(request.id, false)}
-                    >
-                      Complete
-                    </Button>
-                  </CardFooter>
                 </Card>
               ))}
             </div>

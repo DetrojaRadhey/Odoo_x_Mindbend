@@ -125,12 +125,39 @@ exports.login = async (req, res) => {
     });
 
     // Format user data based on role
-    const userData = {
-      id: user._id,
-      name: user.name,
-      email: role === "service_provider" ? user.contact.email : user.email,
-      role: role
-    };
+    let userData;
+    if (role === 'user') {
+      userData = {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: role,
+        mobile: user.mobile,
+        location: user.location,
+        other_contact: user.other_contact,
+        latlon: user.latlon
+      };
+    } else if (role === 'service_provider') {
+      userData = {
+        id: user._id,
+        name: user.name,
+        email: user.contact.email,
+        role: role,
+        contact: user.contact,
+        location: user.location,
+        type: user.type,
+        rating: user.rating,
+        service_count: user.service_count,
+        latlon: user.latlon
+      };
+    } else {
+      userData = {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: role
+      };
+    }
 
     return responseFormatter(res, 200, true, "Login successful", {
       user: userData
