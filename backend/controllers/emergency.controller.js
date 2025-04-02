@@ -6,113 +6,109 @@ const bcrypt = require("bcryptjs");
 const { responseFormatter } = require("../utils/responseFormatter");
 const Admin = require("../models/admin.model");
 require("dotenv").config();
-
-
+const mongoose = require("mongoose");
 
 exports.saveemergency = async (req, res) => {
     try {
-      const { latitude, longitude, userid } = req.body;
-  
-      if (!latitude || !longitude || !userid) {
-        return res.status(400).json(responseFormatter(false, "Missing required fields"));
-      }
-  
-      // Create emergency request
-      const emergencyReq = new Emergency({
-        latlon: { type: "Point", coordinates: [longitude, latitude] },
-        user: userid,
-        status: "pending",
-      });
-  
-      await emergencyReq.save();
-  
-      // Find nearby hospitals (service providers of type 'Private hospital')
-      
-      return res.status(200).json({
-        success: true,
-        message: "Emergency request created successfully",
-        data: emergencyReq,
-      })
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({
-        success: false,
-        message: "Internal server error",
-      });
-    }
-  };
+        const { latitude, longitude, userid } = req.body;
 
-  exports.showreqtohos = async (req, res) => {
-    try {
-        const token = req.cookies.jwt_signup || req.cookies.jwt_login;
-        if (!token) {
-            return res.status(401).json(responseFormatter(false, "Unauthorized"));
+        if (!latitude || !longitude || !userid) {
+            return res.status(400).json(responseFormatter(false, "Missing required fields"));
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const userId = decoded.id;
-
-        const serviceProvider = await ServiceProvider.findById(userId);
-        if (!serviceProvider) {
-            return res.status(404).json(responseFormatter(false, "Service provider not found"));
+        // Validate userid
+        if (!mongoose.Types.ObjectId.isValid(userid)) {
+            return res.status(400).json(responseFormatter(false, "Invalid user ID format"));
         }
 
-        // Check if latitude and longitude are available
-        if (!serviceProvider.latlon || 
-            serviceProvider.latlon.longitude === undefined || 
-            serviceProvider.latlon.latitude === undefined) {
-            return res.status(400).json({
-                success: false,
-                message: "Service provider location not properly set"
-            });
-        }
-        
-        // Extract longitude and latitude from serviceProvider.latlon
-        const longitude = serviceProvider.latlon.longitude;
-        const latitude = serviceProvider.latlon.latitude;
-        
-        // Find all pending emergency requests within 10km
-        const requests = await Emergency.find({
-            status: 'pending',
-            latlon: {
-                $near: {
-                    $geometry: {
-                        type: 'Point',
-                        coordinates: [longitude, latitude]
-                    },
-                    $maxDistance: 10000 // 10 km
-                }
-            }
-        }).populate('user', 'name mobile');
+        // Create emergency request
+        const emergencyReq = new Emergency({
+            latlon: { type: "Point", coordinates: [longitude, latitude] },
+            user: new mongoose.Types.ObjectId(userid), // Ensure it's an ObjectId
+            status: "pending",
+        });
 
-        if (requests.length === 0) {
-            return res.status(200).json({
-                success: true, 
-                message: "No pending requests found in your area", 
-                data: []
-            });
-        }
+        await emergencyReq.save();
 
-        return res.status(200).json({ 
-            success: true, 
-            message: "Pending requests found", 
-            data: requests 
+        return res.status(200).json({
+            success: true,
+            message: "Emergency request created successfully",
+            data: emergencyReq,
         });
     } catch (error) {
-        console.error("Error details:", error);
+        console.error(error);
         return res.status(500).json({
             success: false,
             message: "Internal server error",
         });
     }
 };
+
+
+exports.showreqtohos = async (req, res) => {
+  try {
+      const token = req.cookies.jwt_signup || req.cookies.jwt_login;
+      if (!token) {
+          return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const userId = decoded.id;
+
+      const serviceProviders = await ServiceProvider.findById(userId);
+      if (!serviceProviders) {
+          return res.status(404).json({ message: "Service provider not found" });
+      }
+
+      console.log(serviceProviders.latlon);  // Log the location data
+      
+      if (!serviceProviders.latlon || !Array.isArray(serviceProviders.latlon.coordinates)) {
+          return res.status(400).json({ message: "Invalid location data for service provider" });
+      }
+
+      const [longitude, latitude] = serviceProviders.latlon.coordinates;
+
+      // ✅ Ensure longitude & latitude are valid numbers
+      if (typeof latitude !== "number" || typeof longitude !== "number") {
+          return res.status(400).json({ message: "Invalid latitude/longitude values" });
+      }
+
+      const requests = await Emergency.find({
+          status: 'pending',
+          latlon: {
+              $near: {
+                  $geometry: {
+                      type: 'Point',
+                      coordinates: [longitude, latitude]
+                  },
+                  $maxDistance: 10000 // 10 km
+              }
+          }
+      }).populate('user', 'name mobile');
+
+      if (!requests || requests.length === 0) {
+          return res.status(404).json({ message: "No requests found" });
+      }
+
+      return res.status(200).json({
+          success: true,
+          message: "Requests retrieved successfully",
+          data: requests,
+      });
+
+  } catch (error) {
+      console.error("Error fetching emergency requests:", error);
+      return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
         exports.acceptEmergency = async (req, res) => {
             try {
               const token = req.cookies.jwt_signup || req.cookies.jwt_login;
               if (!token) {
                   return res.status(401).json({
                       success: false,
-                      message: "Unauthorized"
+                      message: "Unauthorized",
                   });
               }
           
@@ -122,8 +118,8 @@ exports.saveemergency = async (req, res) => {
               const { requestId } = req.body;
               if (!requestId) {
                 return res.status(400).json({
-                    success: false,
-                    message: "Missing required fields"
+                  success: false,
+                  message: "Missing required fields",
                 });
               }
           
@@ -132,14 +128,14 @@ exports.saveemergency = async (req, res) => {
               if (!emergencyRequest) {
                 return res.status(404).json({
                   success: false,
-                  message: "Emergency request not found"
+                  message: "Request not found",
                 });
               }
           
               if (emergencyRequest.status !== "pending") {
                 return res.status(400).json({
                   success: false,
-                  message: "Request is not pending"
+                  message: "Request is not in a state to be accepted",
                 });
               }
           
@@ -149,13 +145,14 @@ exports.saveemergency = async (req, res) => {
           
               return res.status(200).json({
                 success: true,
-                message: "Emergency request accepted successfully"
+                message: "Request accepted successfully",
+                data: emergencyRequest,
               });
             } catch (error) {
               console.error(error);
               return res.status(500).json({
                 success: false,
-                message: "Internal server error"
+                message: "Internal server error",
               });
             }
           };
@@ -165,7 +162,7 @@ exports.saveemergency = async (req, res) => {
               if (!token) {
                   return res.status(401).json({
                       success: false,
-                      message: "Unauthorized"
+                      message: "Unauthorized",
                   });
               }
           
@@ -198,7 +195,7 @@ exports.saveemergency = async (req, res) => {
               if (!token) {
                   return res.status(401).json({
                       success: false,
-                      message: "Unauthorized"
+                      message: "Unauthorized",
                   });
               }
           
@@ -208,8 +205,8 @@ exports.saveemergency = async (req, res) => {
               const { requestId } = req.body;
               if (!requestId) {
                 return res.status(400).json({
-                    success: false,
-                    message: "Missing required fields"
+                  success: false,
+                  message: "Missing required fields",
                 });
               }
           
@@ -221,7 +218,7 @@ exports.saveemergency = async (req, res) => {
               if (!emergencyRequest) {
                 return res.status(404).json({
                   success: false,
-                  message: "Emergency request not found"
+                  message: "Request not found or not assigned to you",
                 });
               }
           
@@ -230,13 +227,13 @@ exports.saveemergency = async (req, res) => {
           
               return res.status(200).json({
                 success: true,
-                message: "Emergency request marked as done successfully"
+                message: "Request marked as done successfully",
               });
             } catch (error) {
               console.error(error);
               return res.status(500).json({
                 success: false,
-                message: "Internal server error"
+                message: "Internal server error",
               });
             }
           };
@@ -248,7 +245,7 @@ exports.saveemergency = async (req, res) => {
               if (!token) {
                   return res.status(401).json({
                       success: false,
-                      message: "Unauthorized"
+                      message: "Unauthorized",
                   });
               }
           
@@ -270,6 +267,101 @@ exports.saveemergency = async (req, res) => {
               return res.status(500).json({
                 success: false,
                 message: "Internal server error",
+              });
+            }
+          };
+          
+          exports.getUserEmergencyRequests = async (req, res) => {
+            try {
+              const token = req.cookies.jwt_signup || req.cookies.jwt_login;
+              if (!token) {
+                return res.status(401).json({
+                  success: false,
+                  message: "Unauthorized"
+                });
+              }
+          
+              const decoded = jwt.verify(token, process.env.JWT_SECRET);
+              const userId = decoded.id;
+          
+              // Find all emergency requests for the user and populate service provider details
+              const requests = await Emergency.find({ user: userId })
+                .populate({
+                  path: 'service_provider',
+                  select: 'name type rating contact location'
+                })
+                .populate('user', 'name mobile location')
+                .sort({ created_at: -1 });
+          
+              return res.status(200).json({
+                success: true,
+                message: "User emergency requests retrieved successfully",
+                data: requests
+              });
+            } catch (error) {
+              console.error("Error fetching user emergency requests:", error);
+              return res.status(500).json({
+                success: false,
+                message: "Internal server error"
+              });
+            }
+          };
+          
+          exports.deleteEmergencyRequest = async (req, res) => {
+            try {
+              const token = req.cookies.jwt_signup || req.cookies.jwt_login;
+              if (!token) {
+                return res.status(401).json({
+                  success: false,
+                  message: "Unauthorized"
+                });
+              }
+          
+              const decoded = jwt.verify(token, process.env.JWT_SECRET);
+              const userId = decoded.id;
+          
+              const { requestId } = req.params;
+              if (!requestId) {
+                return res.status(400).json({
+                  success: false,
+                  message: "Request ID is required"
+                });
+              }
+          
+              const emergencyRequest = await Emergency.findById(requestId);
+              if (!emergencyRequest) {
+                return res.status(404).json({
+                  success: false,
+                  message: "Emergency request not found"
+                });
+              }
+          
+              // Check if the request belongs to the user
+              if (emergencyRequest.user.toString() !== userId) {
+                return res.status(403).json({
+                  success: false,
+                  message: "Not authorized to delete this request"
+                });
+              }
+          
+              if (emergencyRequest.status === "accepted") {
+                // If request is accepted, mark it as deleted by user
+                emergencyRequest.status = "deleted_by_user";
+                await emergencyRequest.save();
+              } else {
+                // If request is pending, remove it completely
+                await Emergency.findByIdAndDelete(requestId);
+              }
+          
+              return res.status(200).json({
+                success: true,
+                message: "Emergency request deleted successfully"
+              });
+            } catch (error) {
+              console.error("Error deleting emergency request:", error);
+              return res.status(500).json({
+                success: false,
+                message: "Internal server error"
               });
             }
           };
