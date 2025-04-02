@@ -11,7 +11,11 @@ interface ServiceProvider {
   _id: string;
   name: string;
   contact: ServiceProviderContact;
-  location?: string;
+  location: {
+    state: string;
+    district: string;
+    city: string;
+  };
   rating?: number;
   isAvailable?: boolean;
 }
@@ -55,12 +59,12 @@ export default function ShowServiceProvider({ providers, title = "Service Provid
                 </div>
 
                 {/* Location */}
-                {provider.location && (
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="h-4 w-4 text-red-500" />
-                    <span className="text-sm">{provider.location}</span>
-                  </div>
-                )}
+                <div className="flex items-center space-x-2">
+                  <MapPin className="h-4 w-4 text-red-500" />
+                  <span className="text-sm">
+                    {provider.location.city}, {provider.location.district}, {provider.location.state}
+                  </span>
+                </div>
 
                 {/* Rating */}
                 {provider.rating !== undefined && (
