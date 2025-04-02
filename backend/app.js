@@ -18,9 +18,10 @@ const dotenv = require("dotenv");
 dotenv.config();
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:8081"], // Allow both origins
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "UPDATE"], // This allows cookies to be sent with requests.
+    origin: 'http://localhost:8081', // Your frontend URL
+    credentials: true, // Important for cookies
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   })
 );
 
@@ -63,6 +64,7 @@ const authRoutes = require("./routes/auth.route");
 const emergencyRoutes = require("./routes/emergency.route");
 const requestRoutes = require("./routes/request.route");
 const adminRoutes = require("./routes/admin.route");
+const userRoutes = require("./routes/user.route");
 
 app.get("/",(req,res)=>{
   res.send("Hi");
@@ -71,7 +73,7 @@ app.use("/auth", authRoutes);
 app.use("/emergency", emergencyRoutes);
 app.use("/request", requestRoutes);
 app.use("/admin",adminRoutes);
-
+app.use("/api/users", userRoutes);
 
 app.listen(port, () => {
   console.log(`port is listing in ${port}`);
