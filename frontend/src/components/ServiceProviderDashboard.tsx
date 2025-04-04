@@ -8,6 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { ServiceRequest, EmergencyRequest } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import RequestDetailsCard from "@/components/RequestDetailsCard";
+
+import DisplayMap from './DisplayMap';
+import RouteMap from './RouteMap';
 // API base URL - should match your backend
 const API_URL = "http://localhost:8080";
 
@@ -26,6 +29,9 @@ const ServiceProviderDashboard = () => {
   const [closedEmergencyRequests, setClosedEmergencyRequests] = useState<EmergencyRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMapOpen, setIsMapOpen] = useState(false);
+  const [selectedRouteEmergency, setSelectedRouteEmergency] = useState<EmergencyRequest | null>(null);
+  console.log(emergencyRequests);
   
   const requests = getServiceProviderRequests() || [];
   
@@ -204,7 +210,11 @@ const ServiceProviderDashboard = () => {
                 <p className="text-sm text-muted-foreground">Completed</p>
               </div>
             </div>
-            <Button variant="outline" className="w-full">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={() => setIsMapOpen(true)}
+            >
               View Map
             </Button>
           </CardContent>
@@ -479,12 +489,9 @@ const ServiceProviderDashboard = () => {
                     <Button 
                       className="flex-1"
                       variant="outline"
-                      onClick={() => {
-                        setSelectedEmergency(request);
-                        setSelectedRequest(null);
-                      }}
+                      onClick={() => setSelectedRouteEmergency(request)}
                     >
-                      View Details
+                      View Map
                     </Button>
                     {request.status !== 'deleted_by_user' && (
                       <Button 
@@ -644,6 +651,21 @@ const ServiceProviderDashboard = () => {
             />
           </DialogContent>
         </Dialog>
+      )}
+      
+      {/* Add DisplayMap component */}
+      <DisplayMap
+        isOpen={isMapOpen}
+        onClose={() => setIsMapOpen(false)}
+      />
+
+      {/* Add RouteMap component */}
+      {selectedRouteEmergency && (
+        <RouteMap
+          isOpen={!!selectedRouteEmergency}
+          onClose={() => setSelectedRouteEmergency(null)}
+          emergency={selectedRouteEmergency}
+        />
       )}
     </div>
     </>
