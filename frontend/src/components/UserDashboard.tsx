@@ -11,6 +11,7 @@ import CreateEmergencyRequest from "@/components/CreateEmergencyRequest";
 import RequestDetailsCard from "@/components/RequestDetailsCard";
 import { AlertTriangle, Car, Clock, MapPin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import AIChatClient from "@/components/AIChatClient";
 import ShowRequestCard from "./ShowRequestCard";
 import { emergencyService } from "@/services/emergency.service";
 import { toast } from "sonner";
@@ -21,6 +22,7 @@ const UserDashboard = () => {
   
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequest | null>(null);
   const [selectedEmergency, setSelectedEmergency] = useState<EmergencyRequest | null>(null);
+  const [chatExpanded, setChatExpanded] = useState(false);
   const [emergencyRequests, setEmergencyRequests] = useState<EmergencyRequest[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -448,6 +450,12 @@ const UserDashboard = () => {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* AI Chat Client */}
+      <AIChatClient 
+        isExpanded={chatExpanded} 
+        setIsExpanded={setChatExpanded} 
+      />
     </div>
   );
 };

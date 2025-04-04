@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const requestController = require('../controllers/request.controller');
+const userController = require('../controllers/user.controller');
 // const { protect } = require('../middleware/auth.middleware');
 
 // User routes
@@ -14,5 +15,8 @@ router.post('/accept-provider', requestController.userAcceptedProvider);
 router.get('/provider/requests', requestController.getRequestToServiceProvider);
 router.post('/accept-request', requestController.providerAcceptRequest);
 // router.get('/nearby',  requestController.getNearbyRequests);
+
+// Chat with AI
+router.post('/chat', userController.AskToAI);
 
 module.exports = router;
