@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams, Navigate } from "react-router-dom";
+import { useSearchParams, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,11 +11,13 @@ import { useData } from "@/contexts/DataContext";
 import { RequestTitle } from "@/types";
 import { toast } from "@/lib/toast";
 import { Loader2 } from "lucide-react";
+import axios from "axios";
 
 const vehicleTypes = ["bike", "car"];
+// const navigateTo = useNavigate();
 
 const requestTitles: RequestTitle[] = [
-  "Roadside Assistance Towing",
+  "Towing",
   "Flat-Tyre",
   "Battery-Jumpstart",
   "Starting Problem",
@@ -34,7 +36,7 @@ const ServiceRequest = () => {
   const [location, setLocation] = useState<{lat: number, lon: number} | null>(null);
   
   // Form state
-  const [title, setTitle] = useState<RequestTitle>("Roadside Assistance Towing");
+  const [title, setTitle] = useState<RequestTitle>("Towing");
   const [problem, setProblem] = useState("");
   const [vehicleType, setVehicleType] = useState("car");
   const [vehicleName, setVehicleName] = useState("");
@@ -45,16 +47,13 @@ const ServiceRequest = () => {
     if (requestType) {
       // Map the service type from URL to a RequestTitle
       const mappings: Record<string, RequestTitle> = {
-        "Towing": "Roadside Assistance Towing",
+        "Towing": "Towing",
         "Flat-Tyre": "Flat-Tyre",
         "Battery-Jumpstart": "Battery-Jumpstart",
         "Starting Problem": "Starting Problem",
         "Key-Unlock-Assistance": "Key-Unlock-Assistance",
         "Fuel-Delivery": "Fuel-Delivery",
         "Fitment Service": "Other",
-        "Dashcam Installation": "Other",
-        "Seat Cover Installation": "Other",
-        "Multimedia System Installation": "Other",
         "Car Inspection": "Other",
         "Bike Express Services": "Other"
       };
@@ -105,25 +104,43 @@ const ServiceRequest = () => {
     
     setIsSubmitting(true);
     try {
-      await createServiceRequest({
-        title,
-        describe_problem: problem,
-        latlon: location,
-        vehical_info: {
-          type: vehicleType as "bike" | "car",
-          name: vehicleName,
-          number: vehicleNumber
+      const response = await axios.post(
+        'http://localhost:8080/request/createRequest',
+        {
+          latitude: location.lat,
+          longitude: location.lon,
+          title: title,
+          describe_problem: problem,
+          vehical_info: {
+            type: vehicleType,
+            name: vehicleName,
+            number: vehicleNumber
+          },
+          advance: 0 // Optional field, setting default to 0
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+          }
         }
-      });
+        
+      );
+      console.log(response);
+      // navigateTo("/show-provider");
+      toast.success("Service request created successfully!");
       
-      toast.success("Service request created successfully! Redirecting to dashboard...");
-      
-      // Redirect to dashboard after 2 seconds
-      setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 2000);
+      // Close the dialog automatically
+      const closeButton = document.querySelector('[data-state="open"] button.close-dialog');
+      if (closeButton) {
+        (closeButton as HTMLButtonElement).click();
+      }
     } catch (error) {
-      toast.error("Failed to create service request: " + (error as Error).message);
+      if (axios.isAxiosError(error)) {
+        toast.error("Failed to create service request: " + (error.response?.data?.message || error.message));
+      } else {
+        toast.error("Failed to create service request: " + (error as Error).message);
+      }
     } finally {
       setIsSubmitting(false);
     }

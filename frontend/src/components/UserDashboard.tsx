@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useData } from "@/contexts/DataContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -12,23 +12,41 @@ import RequestDetailsCard from "@/components/RequestDetailsCard";
 import { AlertTriangle, Car, Clock, MapPin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import AIChatClient from "@/components/AIChatClient";
+import ShowRequestCard from "./ShowRequestCard";
+import { emergencyService } from "@/services/emergency.service";
+import { toast } from "sonner";
 
 const UserDashboard = () => {
   const { currentUser } = useAuth();
-  const { 
-    getUserRequests, 
-    getUserEmergencyRequests,
-    updateServiceRequestStatus,
-    updateEmergencyRequestStatus
-  } = useData();
+  const { getUserRequests, updateServiceRequestStatus } = useData();
   
   const [selectedRequest, setSelectedRequest] = useState<ServiceRequest | null>(null);
   const [selectedEmergency, setSelectedEmergency] = useState<EmergencyRequest | null>(null);
   const [chatExpanded, setChatExpanded] = useState(false);
+  const [emergencyRequests, setEmergencyRequests] = useState<EmergencyRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   
   // Get user requests
   const requests = getUserRequests();
-  const emergencyRequests = getUserEmergencyRequests();
+
+  useEffect(() => {
+    fetchEmergencyRequests();
+  }, []);
+
+  const fetchEmergencyRequests = async () => {
+    try {
+      setLoading(true);
+      const response = await emergencyService.getUserEmergencies();
+      if (response.success) {
+        setEmergencyRequests(response.data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching emergency requests:", error);
+      toast.error("Failed to fetch emergency requests");
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleString();
@@ -37,12 +55,28 @@ const UserDashboard = () => {
   const handleCloseRequest = async (id: string, isEmergency: boolean) => {
     try {
       if (isEmergency) {
-        await updateEmergencyRequestStatus(id, "closed");
+        const response = await emergencyService.markEmergencyAsDone(id);
+        if (response.success) {
+          toast.success("Emergency request marked as resolved");
+          fetchEmergencyRequests(); // Refresh the list
+        }
       } else {
         await updateServiceRequestStatus(id, "closed");
       }
     } catch (error) {
       console.error("Error closing request:", error);
+      toast.error("Failed to update request status");
+    }
+  };
+  
+  const handleDeleteEmergency = async (requestId: string, isAccepted: boolean) => {
+    try {
+      await emergencyService.deleteEmergency(requestId);
+      toast.success(isAccepted ? "Request marked as deleted" : "Request cancelled successfully");
+      fetchEmergencyRequests(); // Refresh the list
+    } catch (error) {
+      console.error("Error deleting emergency:", error);
+      toast.error("Failed to delete emergency request");
     }
   };
   
@@ -60,7 +94,7 @@ const UserDashboard = () => {
                 <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
                   <Car className="h-6 w-6 text-blue-500" />
                 </div>
-                <p className="text-2xl font-bold">{activeRequests}</p>
+                <p className="text-2xl font-bold">{requests.length}</p>
                 <p className="text-sm text-muted-foreground">Active Service Requests</p>
               </CardContent>
             </Card>
@@ -141,12 +175,7 @@ const UserDashboard = () => {
         <TabsContent value="active" className="space-y-4">
           {requests.filter(req => req.status !== "closed").length === 0 ? (
             <Card>
-              <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">No active service requests</p>
-                <Button className="mt-4" variant="outline" onClick={() => document.querySelector('dialog')?.showModal()}>
-                  Create New Request
-                </Button>
-              </CardContent>
+              <ShowRequestCard />
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -213,7 +242,7 @@ const UserDashboard = () => {
         </TabsContent>
         
         <TabsContent value="emergency" className="space-y-4">
-          {emergencyRequests.filter(req => req.status !== "closed").length === 0 ? (
+          {emergencyRequests.filter(req => req.status !== "closed" && req.status !== "deleted_by_user").length === 0 ? (
             <Card>
               <CardContent className="p-6 text-center">
                 <p className="text-muted-foreground">No active emergency requests</p>
@@ -222,7 +251,7 @@ const UserDashboard = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {emergencyRequests
-                .filter(req => req.status !== "closed")
+                .filter(req => req.status !== "closed" && req.status !== "deleted_by_user")
                 .map(request => (
                   <Card key={request.id} className="overflow-hidden border-emergency">
                     <CardHeader className="pb-2 bg-red-50">
@@ -265,24 +294,24 @@ const UserDashboard = () => {
                         )}
                       </div>
                     </CardContent>
-                    <CardFooter className="flex justify-between border-t pt-4">
+                    <CardFooter className="flex justify-between border-t pt-4 gap-2">
                       <Button 
                         variant="outline" 
                         size="sm"
+                        className="flex-1"
                         onClick={() => setSelectedEmergency(request)}
                       >
                         View Details
                       </Button>
                       
-                      {request.status === "accepted" && (
-                        <Button 
-                          variant="destructive" 
-                          size="sm"
-                          onClick={() => handleCloseRequest(request.id, true)}
-                        >
-                          Mark as Resolved
-                        </Button>
-                      )}
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => handleDeleteEmergency(request._id || request.id, request.status === "accepted")}
+                      >
+                        {request.status === "pending" ? "Cancel Request" : "Delete Request"}
+                      </Button>
                     </CardFooter>
                   </Card>
                 ))

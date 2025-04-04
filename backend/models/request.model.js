@@ -38,10 +38,11 @@ const requestSchema = new mongoose.Schema({
     default: "pending",
   },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  service_provider: {
+  service_provider: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "ServiceProvider",
-  },
+  }],
+  selected_provider:{type:mongoose.Schema.Types.ObjectId,ref:"ServiceProvider"},
   advance: Number,
 });
 
