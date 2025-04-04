@@ -1,20 +1,48 @@
 const User = require("../models/user.model");
 const { responseFormatter } = require("../utils/responseFormatter");
+const axios = require('axios');
 
-// Get user profile
-exports.getUserProfile = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select('-password');
-    
-    if (!user) {
-      return responseFormatter(res, 404, false, "User not found");
-    }
+// Chat with ai
+exports.AskToAI = async (req, res) => {
+  const { Groq } = require("groq-sdk");
 
-    return responseFormatter(res, 200, true, "User profile retrieved successfully", { user });
-  } catch (err) {
-    console.error("Get profile error:", err);
-    return responseFormatter(res, 500, false, "Server error", null, err.message);
+  const groq = new Groq({ apiKey: process.env.GROQ_KEY });
+
+  let respose = await main(req.body.input_value);
+  res.status(200).send({ message: respose });
+  async function main(query) {
+    const chatCompletion = await getGroqChatCompletion(query);
+    // Print the completion returned by the LLM.
+    console.log(chatCompletion.choices[0]?.message?.content || "");
+    return chatCompletion.choices[0]?.message?.content || "Sorry I can't Provide data for your query";
   }
+
+  async function getGroqChatCompletion(query) {
+    return groq.chat.completions.create({
+      messages: [
+        {
+          role: "user",
+          content: `
+          This is a user query: ${query}. Answer the query if and only if user can solve his problem by his own. Answer user's query if and only if query is related to car or bike problem.
+          If issue is major then tell user to contact service provider. If you answer user's query then also add youtube video link related to user's problem.
+          `,
+        },
+      ],
+      model: "llama3-8b-8192",
+    });
+  }
+  // const { LangflowClient } = await import("@datastax/langflow-client");
+  // let { input_value } = req.body; // Insert input value here
+  // const langflowId = "9f2e8c22-bb2f-4fa4-84e8-804825a6738f";
+  // const flowId = "3c34fc25-bf1d-41bb-9876-929fdb067199";
+  // const apikey = process.env.APPLICATION_TOKEN;
+
+  // const client = new LangflowClient({ langflowId, apiKey: apikey });
+  // const flow = client.flow(flowId);
+
+  // const result = await flow.run(input_value);
+  // console.log(result.chatOutputText());
+  // return res.json({message: result.chatOutputText()});
 };
 
 // Update user profile
