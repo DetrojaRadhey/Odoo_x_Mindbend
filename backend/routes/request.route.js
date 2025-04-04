@@ -5,6 +5,7 @@ const userController = require('../controllers/user.controller');
 // const { protect } = require('../middleware/auth.middleware');
 
 // User routes
+router.get('/checkacceptedrequest', requestController.checkAcceptedRequest);
 router.post('/createRequest', requestController.createRequest);
 router.get('/my-requests',  requestController.getUserRequests);
 router.get('/:id',  requestController.updateRequest);

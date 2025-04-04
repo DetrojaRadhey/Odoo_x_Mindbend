@@ -307,7 +307,7 @@ exports.userAcceptedProvider = async (req, res) => {
       {
         $set: {
           selected_provider: providerId,
-          status: 'accepted'
+          status: 'pending'
         }
       },
       { new: true }
@@ -379,7 +379,7 @@ exports.getRequestToServiceProvider = async (req, res) => {
     };
 
     return responseFormatter(res, 200, true, "Service provider requests retrieved successfully", { 
-      requests: formattedRequests,
+      requests: groupedRequests,
       // totalRequests: requests.length
     });
   } catch (err) {
@@ -436,3 +436,67 @@ exports.providerAcceptRequest = async (req, res) => {
     return responseFormatter(res, 500, false, "Server error", null, err.message);
   }
 };
+
+exports.checkAcceptedRequest = async (req, res) => {
+  try {
+    // Get token from either jwt_signup or jwt_login cookie
+    const token = req.cookies.jwt_signup || req.cookies.jwt_login;
+    if (!token) {
+      return responseFormatter(res, 401, false, "No token, authorization denied");
+    }
+
+    // Verify token and get service provider id
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(decoded);
+    
+    const serviceProviderId = decoded.id;
+    
+    // Find all requests where this service provider is selected and status is accepted
+    const acceptedRequests = await Request.find({
+      selected_provider: serviceProviderId,
+      status: "accepted"
+    })
+    .populate('user', 'name email mobile location latlon other_contact')
+    .populate('selected_provider', 'name contact location rating')
+    .sort({ createdAt: -1 });
+    
+    console.log("Accepted requests:", acceptedRequests);
+    
+    // Format the requests to include all necessary information
+    const formattedRequests = acceptedRequests.map(request => ({
+      id: request._id,
+      title: request.title,
+      describe_problem: request.describe_problem,
+      vehical_info: request.vehical_info,
+      status: request.status,
+      advance: request.advance,
+      createdAt: request.createdAt,
+      user: {
+        id: request.user._id,
+        name: request.user.name,
+        email: request.user.email,
+        mobile: request.user.mobile,
+        location: request.user.location,
+        latlon: request.user.latlon,
+        other_contact: request.user.other_contact
+      },
+      service_provider: {
+        id: request.selected_provider._id,
+        name: request.selected_provider.name,
+        contact: request.selected_provider.contact,
+        location: request.selected_provider.location,
+        rating: request.selected_provider.rating
+      },
+      latlon: request.latlon
+    }));
+    
+    return responseFormatter(res, 200, true, "Accepted requests retrieved successfully", {
+      requests: formattedRequests,
+      totalAccepted: acceptedRequests.length
+    });
+  } catch (err) {
+    console.error("Get accepted requests error:", err);
+    return responseFormatter(res, 500, false, "Server error", null, err.message);
+  }
+};
+

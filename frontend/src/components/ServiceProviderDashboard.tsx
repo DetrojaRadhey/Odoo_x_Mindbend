@@ -31,24 +31,43 @@ const ServiceProviderDashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [selectedRouteEmergency, setSelectedRouteEmergency] = useState<EmergencyRequest | null>(null);
-  console.log(emergencyRequests);
   
   const requests = getServiceProviderRequests() || [];
-  
   // Group requests by status
-    const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+  console.log(pendingRequests);
 
-    const fetchPendingRequests = async () => {
-      try {
+  // To programmatically switch tabs
+  const [activeTab, setActiveTab] = useState<string>("active");
+
+  // Add this state near your other state declarations
+  const [acceptedServiceRequests, setAcceptedServiceRequests] = useState<any[]>([]);
+
+  const fetchPendingRequests = async () => {
+    try {
       setIsLoading(true);
       setError(null);
       const response = await axios.get('http://localhost:8080/request/provider/requests', {
         withCredentials: true
       });
-      console.log(response);
+      console.log(response.data.data.requests);
       
       if (response.data.success) {
-        setPendingRequests(response.data.data.requests);
+        // Make sure we're setting an array
+        const requests = response.data.data.requests;
+        if (requests && typeof requests === 'object') {
+          // Check if it's an object with properties like pending, accepted, etc.
+          if (requests.pending && Array.isArray(requests.pending)) {
+            setPendingRequests(requests.pending);
+          } else if (Array.isArray(requests)) {
+            setPendingRequests(requests);
+          } else {
+            console.error('Unexpected request format:', requests);
+            setPendingRequests([]);
+          }
+        } else {
+          setPendingRequests([]);
+        }
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -56,21 +75,54 @@ const ServiceProviderDashboard = () => {
       } else {
         setError('An unexpected error occurred');
       }
+      setPendingRequests([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleTabClick = (value: string) => {
-    if (value === 'pending') {
-      fetchPendingRequests();
+  // Add this function to fetch accepted requests
+  const fetchAcceptedServiceRequests = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await axios.get('http://localhost:8080/request/checkacceptedrequest', {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        console.log('Accepted service requests:', response.data.data.requests);
+        setAcceptedServiceRequests(response.data.data.requests || []);
+      } else {
+        setAcceptedServiceRequests([]);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message || 'Failed to fetch accepted requests');
+      } else {
+        setError('An unexpected error occurred');
+      }
+      setAcceptedServiceRequests([]);
+    } finally {
+      setIsLoading(false);
     }
   };
-     
-   const acceptedRequests = requests?.filter(req => req?.status === "accepted") || [];
-   const closedRequests = requests?.filter(req => req?.status === "closed" || req?.status === "deleted_by_user") || [];
+
+  // Update your handleTabClick function to fetch both types of requests
+  const handleTabClick = (value: string) => {
+    setActiveTab(value);
+    if (value === 'pending') {
+      fetchPendingRequests();
+    } else if (value === 'active') {
+      fetchAcceptedServiceRequests();
+      fetchAllData(); // Keep this to fetch emergency data
+    }
+  };
+   
+  const acceptedRequests = requests?.filter(req => req?.status === "accepted") || [];
+  const closedRequests = requests?.filter(req => req?.status === "closed" || req?.status === "deleted_by_user") || [];
     
-    const fetchAllData = async () => {
+  const fetchAllData = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -96,13 +148,16 @@ const ServiceProviderDashboard = () => {
     } finally {
       setLoading(false);
     }
-  
+  };
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleString();
   };
 
   useEffect(() => {
     fetchAllData();
+    fetchPendingRequests();
+    fetchAcceptedServiceRequests();
     // Set up polling interval
     // const interval = setInterval(fetchAllData, 30000); // Refresh every 30 seconds
 
@@ -283,13 +338,13 @@ const ServiceProviderDashboard = () => {
         </Card>
       </div>
       
-      <Tabs defaultValue="active" className="w-full" onValueChange={handleTabClick}>
+      <Tabs defaultValue="active" value={activeTab} className="w-full" onValueChange={handleTabClick}>
         <TabsList className="grid grid-cols-3 mb-4">
           <TabsTrigger value="pending" className="cursor-pointer">
             {isLoading ? "Loading..." : "Pending Requests"}
             {error && <span className="text-red-500 ml-2">!</span>}
           </TabsTrigger>
-          <TabsTrigger value="active">Active Requests</TabsTrigger>
+          <TabsTrigger value="active" >Active Requests</TabsTrigger>
           <TabsTrigger value="completed">Completed</TabsTrigger>
         </TabsList>
         
@@ -314,7 +369,7 @@ const ServiceProviderDashboard = () => {
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {pendingRequests.map((request) => (
+              {safeMap(pendingRequests, (request) => (
                 <Card key={request.id} className="overflow-hidden">
                   <CardHeader className="bg-blue-50 pb-2">
                     <div className="flex justify-between items-start">
@@ -403,8 +458,16 @@ const ServiceProviderDashboard = () => {
                           if (response.data.success) {
                             // Refresh the pending requests
                             fetchPendingRequests();
+                            // Also refresh accepted requests
+                            fetchAcceptedServiceRequests();
+                            // Also refresh all other data
+                            fetchAllData();
+                            toast.success("Request accepted successfully");
+                            // Switch to active tab
+                            setActiveTab("active");
                           } else {
                             console.error('Failed to accept request:', response.data.message);
+                            toast.error("Failed to accept request");
                           }
                         } catch (error) {
                           console.error('Error accepting request:', error);
@@ -421,7 +484,7 @@ const ServiceProviderDashboard = () => {
         </TabsContent>
         
         <TabsContent value="active" className="space-y-4">
-          {!acceptedEmergencyRequests?.length && !acceptedRequests?.length ? (
+          {!acceptedEmergencyRequests?.length && !acceptedServiceRequests?.length ? (
             <Card>
               <CardContent className="p-6 text-center">
                 <p className="text-muted-foreground">No active requests</p>
@@ -506,7 +569,7 @@ const ServiceProviderDashboard = () => {
                 </Card>
               ))}
               
-              {safeMap(acceptedRequests, request => (
+              {safeMap(acceptedServiceRequests, request => (
                 <Card key={request.id} className="overflow-hidden">
                   <CardHeader className="bg-blue-50 pb-2">
                     <div className="flex justify-between items-start">
@@ -537,6 +600,25 @@ const ServiceProviderDashboard = () => {
                       </div>
                     </div>
                   </CardContent>
+                  <CardFooter className="border-t pt-3 flex gap-2">
+                    <Button 
+                      className="flex-1"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedRequest(request);
+                        setSelectedEmergency(null);
+                      }}
+                    >
+                      Details
+                    </Button>
+                    <Button 
+                      className="flex-1"
+                      variant="default"
+                      onClick={() => handleCloseRequest(request.id, false)}
+                    >
+                      Complete
+                    </Button>
+                  </CardFooter>
                 </Card>
               ))}
             </div>
@@ -553,7 +635,7 @@ const ServiceProviderDashboard = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[...closedRequests.filter(req => req && req.user), ...processedClosedEmergencies]
-                .map((request, index) => (
+                .map((request: any, index) => (
                   <Card key={index} className={`overflow-hidden opacity-80 ${
                     request.status === 'deleted_by_user' ? 'border-yellow-500/50' : ''
                   }`}>

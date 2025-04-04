@@ -45,6 +45,22 @@ exports.AskToAI = async (req, res) => {
   // return res.json({message: result.chatOutputText()});
 };
 
+// Get user profile
+exports.getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    
+    if (!user) {
+      return responseFormatter(res, 404, false, "User not found");
+    }
+
+    return responseFormatter(res, 200, true, "User profile retrieved successfully", { user });
+  } catch (err) {
+    console.error("Get profile error:", err);
+    return responseFormatter(res, 500, false, "Server error", null, err.message);
+  }
+};
+
 // Update user profile
 exports.updateUserProfile = async (req, res) => {
   try {
