@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080/emergency';
+const API_URL = 'http://localhost:3000/emergency';
 
 // Configure axios defaults
 axios.defaults.withCredentials = true;

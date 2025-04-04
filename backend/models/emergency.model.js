@@ -24,6 +24,13 @@ const emergencySchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "ServiceProvider",
   },
+  created_at: {
+    type: Date,
+    default: Date.now
+  }
+}, {
+  timestamps: true
 });
 emergencySchema.index({ latlon: "2dsphere" });
+emergencySchema.index({ user: 1, created_at: -1 });
 module.exports = mongoose.model("Emergency", emergencySchema);
