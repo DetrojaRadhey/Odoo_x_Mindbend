@@ -70,47 +70,52 @@ const Navigation = () => {
               Home
             </Link>
             
-            <NavigationMenu>
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className={`font-medium ${
-                    isActive("/services") ? "text-blue-600 font-semibold" : "text-gray-800 hover:text-blue-600"
-                  }`}>Services</NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <div className="w-[400px] p-4 bg-white rounded-lg shadow-lg">
-                      {serviceCategories.map((category, i) => (
-                        <div key={i} className="space-y-3">
-                          <h3 className="font-medium text-lg border-b pb-2 text-gray-900">{category.title}</h3>
-                          <ul className="space-y-2">
-                            {category.services.map((service, j) => (
-                              <li key={j}>
-                                <NavigationMenuLink asChild>
-                                  <Link
-                                    to={`/service-request?type=${service.name}`}
-                                    className={cn(
-                                      "block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-blue-50 focus:bg-blue-50",
-                                      "flex items-center gap-2"
-                                    )}
-                                  >
-                                    {service.icon}
-                                    <div>
-                                      <div className="text-sm font-medium leading-none mb-1 text-gray-900">{service.name}</div>
-                                      <p className="line-clamp-2 text-xs leading-snug text-gray-600">
-                                        {service.description}
-                                      </p>
-                                    </div>
-                                  </Link>
-                                </NavigationMenuLink>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
+
+            {/* Only show Services menu if user is not admin */}
+            {currentUser?.role === 'user' && (
+              <NavigationMenu>
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className={`px-3 py-2 rounded-md text-sm font-medium ${
+                      isActive("/services") ? "text-primary font-bold" : ""
+                    }`}>Services</NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="w-[400px] p-4 bg-white rounded-lg shadow-lg">
+                        {serviceCategories.map((category, i) => (
+                          <div key={i} className="space-y-3">
+                            <h3 className="font-medium text-lg border-b pb-2">{category.title}</h3>
+                            <ul className="space-y-2">
+                              {category.services.map((service, j) => (
+                                <li key={j}>
+                                  <NavigationMenuLink asChild>
+                                    <Link
+                                      to={`/service-request?type=${service.name}`}
+                                      className={cn(
+                                        "block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                                        "flex items-center gap-2"
+                                      )}
+                                    >
+                                      {service.icon}
+                                      <div>
+                                        <div className="text-sm font-medium leading-none mb-1">{service.name}</div>
+                                        <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                                          {service.description}
+                                        </p>
+                                      </div>
+                                    </Link>
+                                  </NavigationMenuLink>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+            )}
+
 
             <Link
               to="/dashboard"
@@ -169,30 +174,34 @@ const Navigation = () => {
               Home
             </Link>
 
-            {/* New Mobile Services Menu */}
-            <div className="space-y-4">
-              {serviceCategories.map((category, i) => (
-                <div key={i} className="space-y-2">
-                  <h3 className="font-medium text-lg px-3 text-gray-900">{category.title}</h3>
-                  <div className="space-y-1">
-                    {category.services.map((service, j) => (
-                      <Link
-                        key={j}
-                        to={`/service-request?type=${service.name}`}
-                        className="flex items-center px-3 py-2 rounded-md text-sm hover:bg-blue-50"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {service.icon}
-                        <div>
-                          <div className="font-medium text-gray-900">{service.name}</div>
-                          <p className="text-xs text-gray-600">{service.description}</p>
-                        </div>
-                      </Link>
-                    ))}
+
+            {/* Only show Services in mobile menu if user is not admin */}
+            {currentUser?.role !== 'admin' && (
+              <div className="space-y-4">
+                {serviceCategories.map((category, i) => (
+                  <div key={i} className="space-y-2">
+                    <h3 className="font-medium text-lg px-3">{category.title}</h3>
+                    <div className="space-y-1">
+                      {category.services.map((service, j) => (
+                        <Link
+                          key={j}
+                          to={`/service-request?type=${service.name}`}
+                          className="flex items-center px-3 py-2 rounded-md text-sm hover:bg-primary-foreground/10"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {service.icon}
+                          <div>
+                            <div className="font-medium">{service.name}</div>
+                            <p className="text-xs text-gray-500">{service.description}</p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <Link
               to="/dashboard"

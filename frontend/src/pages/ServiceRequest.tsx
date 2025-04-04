@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams, Navigate } from "react-router-dom";
+import { useSearchParams, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { Loader2 } from "lucide-react";
 import axios from "axios";
 
 const vehicleTypes = ["bike", "car"];
+// const navigateTo = useNavigate();
 
 const requestTitles: RequestTitle[] = [
   "Towing",
@@ -123,8 +124,10 @@ const ServiceRequest = () => {
             'Content-Type': 'application/json',
           }
         }
+        
       );
-
+      console.log(response);
+      // navigateTo("/show-provider");
       toast.success("Service request created successfully!");
       
       // Close the dialog automatically

@@ -68,12 +68,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (response.data.success) {
         const userData = response.data.data.user;
         
-        // Make sure role is explicitly set here
-        const authUser: AuthUser = {
-          ...userData,
-          role: role, // Explicitly set role to match the parameter
-        } as AuthUser;
-        console.log(authUser);
+        let authUser: AuthUser;
+        
+        // Create the appropriate user type based on the role
+        if (userData.role === 'user') {
+          authUser = {
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
+            role: 'user',
+            mobile: userData.mobile || '',
+            location: userData.location || { state: '', district: '', city: '', address: '' },
+            other_contact: userData.other_contact || [],
+            latlon: userData.latlon || { lat: 0, lon: 0 }
+          } as UserAuthUser;
+        } else if (userData.role === 'service_provider') {
+          authUser = {
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
+            role: 'service_provider',
+            contact: userData.contact,
+            location: userData.location,
+            type: userData.type,
+            rating: userData.rating,
+            service_count: userData.service_count,
+            latlon: userData.latlon
+          } as ServiceProviderAuthUser;
+        } else {
+          authUser = {
+            id: userData.id,
+            name: userData.name,
+            email: userData.email,
+            role: 'admin'
+          } as AdminAuthUser;
+        }
         
         setCurrentUser(authUser);
         localStorage.setItem('currentUser', JSON.stringify(authUser));
@@ -122,26 +151,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw new Error("No user is logged in");
       }
       
-      if (currentUser.role === 'admin') {
-        throw new Error("Admin profile updates are not supported");
+      if (currentUser.role !== 'user') {
+        throw new Error("Only users can update their profile");
       }
       
-      // Since we've checked that currentUser.userType is 'user',
-      // TypeScript knows this is a UserAuthUser type
+      // Create updated user object with all required fields
       const updatedUser: UserAuthUser = {
-        ...currentUser,
-        ...userData,
+        ...currentUser as UserAuthUser,
+        name: userData.name || currentUser.name,
+        email: currentUser.email, // Keep the original email
+        mobile: userData.mobile || currentUser.mobile,
+        role: 'user',
         location: {
-          ...currentUser.location,
-          ...(userData.location || {})
-        }
+          state: userData.location?.state || currentUser.location?.state || '',
+          district: userData.location?.district || currentUser.location?.district || '',
+          city: userData.location?.city || currentUser.location?.city || '',
+          address: userData.location?.address || currentUser.location?.address || ''
+        },
+        other_contact: userData.other_contact || currentUser.other_contact || [],
+        latlon: currentUser.latlon // Keep the original latlon
       };
       
-      // In a real app, we would make an API call to update the user in the database
+      // Update the current user state
       setCurrentUser(updatedUser);
+      
+      // Update localStorage with the new user data
       localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-      toast.success("Profile updated successfully!");
+      
     } catch (error) {
+      console.error("Update profile error:", error);
       toast.error("Failed to update profile: " + (error as Error).message);
       throw error;
     } finally {

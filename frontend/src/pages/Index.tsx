@@ -33,24 +33,32 @@ const Index: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Hero Section - Note: Navigation is handled by the existing Navigation component */}
-      <section className="bg-gradient-to-r from-blue-50 to-indigo-50 py-12 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 mb-8 md:mb-0">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-                Roadside Assistance <span className="text-blue-600">When You Need It Most</span>
-              </h1>
-              <p className="text-lg text-gray-600 mb-8">
-                Get immediate help for vehicle breakdowns and emergency situations. 
-                Our smart system connects you with nearby mechanics and emergency services.
-              </p>
-              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                {!currentUser ? (
-                  <>
-                    <Button size="lg" className="bg-blue-600 hover:bg-blue-700" asChild>
-                      <Link to="/login">Login</Link>
+
+    <div className="min-h-screen flex flex-col">
+      {/* Hero Section */}
+      <section className="relative bg-yellow-100 text-black">
+        <div className="container mx-auto px-6 py-24 md:py-32 flex flex-col md:flex-row items-center">
+          <div className="md:w-1/2 mb-8 md:mb-0 ml-20">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+              Bike & Car <br />Repair Service
+            </h1>
+            <p className="text-lg mb-8 max-w-lg">
+              Qualified technicians to get your vehicle back on the road. Fast, reliable service at your doorstep.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              {currentUser ? (
+                <Link to="/dashboard">
+                  <Button className="bg-black text-white hover:bg-gray-800" size="lg">Go to Dashboard</Button>
+                </Link>
+              ) : (
+                <>
+                  <Link to="/register">
+                    <Button className="bg-black text-white hover:bg-gray-800" size="lg">Sign Up Now</Button>
+                  </Link>
+                  <Link to="/login">
+                    <Button variant="outline" className="border-black text-black hover:bg-black/5" size="lg">
+                      Login
+
                     </Button>
                     <Button size="lg" variant="outline" className="border-blue-600 text-blue-600" asChild>
                       <Link to="/signup">Sign Up</Link>
@@ -70,19 +78,39 @@ const Index: React.FC = () => {
                 className="rounded-lg shadow-xl"
               />
             </div>
+
+          </div>
+          <div className="md:w-1/2">
+            <img 
+              src="/images/home_banner.png" 
+              alt="Roadside Assistance" 
+              className="w-[400px] max-w-md mx-auto rounded-lg right-20 bottom-0 absolute max-[380px]:static"
+            />
+
           </div>
         </div>
       </section>
 
       {/* Services Section */}
       <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Our Services</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              We provide comprehensive roadside assistance and emergency support services
-              to help you get back on the road quickly and safely.
-            </p>
+
+        <div className="container mx-auto px-6">
+          <h2 className="text-3xl font-bold mb-2">Powering Future</h2>
+          <p className="text-lg text-gray-600 mb-8">
+            Our comprehensive auto service solutions keep you moving. We service all types of vehicles with trained technicians.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center">
+              <img src="/images/car.jpg" alt="Car" className="h-32 object-contain" />
+            </div>
+            <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center">
+              <img src="/images/bike.jpg" alt="Bike" className="h-32 object-contain" />
+            </div>
+            <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center">
+              <img src="/images/van.jpg" alt="Van" className="h-32 object-contain" />
+            </div>
+
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -101,68 +129,22 @@ const Index: React.FC = () => {
         </div>
       </section>
 
-      {/* How It Works Section with Blue Background */}
-      <section className="py-16 bg-blue-600 text-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">How It Works</h2>
-            <p className="text-lg text-blue-100 max-w-2xl mx-auto">
-              Our platform makes it easy to get roadside assistance when you need it the most.
-            </p>
-          </div>
+      
+      
+      
+      {/* Car Inspection Card */}
+      <section className="py-12 bg-blue-900 text-white">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-center rounded-lg overflow-hidden">
+            <div className="md:w-2/3 p-8">
+              <h3 className="text-2xl font-bold mb-4">Car Inspection Services</h3>
+              <ul className="mb-6 space-y-2">
+                <li className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                  Full vehicle inspection
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-600 text-2xl font-bold">1</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Request Assistance</h3>
-              <p className="text-blue-100">
-                Select the type of roadside help you need through our easy-to-use app.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-600 text-2xl font-bold">2</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Get Connected</h3>
-              <p className="text-blue-100">
-                We'll match you with nearby service providers who can assist you right away.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-600 text-2xl font-bold">3</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-2">Track & Pay</h3>
-              <p className="text-blue-100">
-                Track their arrival in real-time and pay securely through the app.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Emergency Features Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 mb-8 md:mb-0">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Smart Accident Detection</h2>
-              <p className="text-lg text-gray-600 mb-6">
-                Our system can automatically detect accidents using motion sensors and impact detection.
-                In emergencies, we'll notify your selected contacts and emergency services if needed.
-              </p>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start">
-                  <div className="flex-shrink-0 mt-1">
-                    <Bell className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-gray-700">Automatic alerts to emergency contacts</p>
-                  </div>
                 </li>
                 <li className="flex items-start">
                   <div className="flex-shrink-0 mt-1">
@@ -181,32 +163,75 @@ const Index: React.FC = () => {
                   </div>
                 </li>
               </ul>
-              <Button className="bg-blue-600 hover:bg-blue-700">Learn More</Button>
+
+              <Button className="bg-yellow-500 text-black hover:bg-yellow-400">Book Now</Button>
             </div>
-            <div className="md:w-1/2">
-              <img 
-                src="/api/placeholder/600/400" 
-                alt="Emergency Features" 
-                className="rounded-lg shadow-xl"
-              />
+            <div className="md:w-1/3 p-4 flex justify-center">
+              <div className="rounded-full bg-blue-800 p-6 relative">
+                <img src="https://via.placeholder.com/150" alt="Service Person" className="rounded-full w-32 h-32 object-cover" />
+                <div className="absolute -top-4 -right-4 w-12 h-12 bg-white rounded-full flex items-center justify-center">
+                  <FileCheck className="w-6 h-6 text-blue-900" />
+                </div>
+                <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-white rounded-full flex items-center justify-center">
+                  <Wrench className="w-6 h-6 text-blue-900" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Newsletter Section */}
+      {/* Business Verticals */}
       <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 max-w-lg text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Stay Updated</h2>
-          <p className="text-gray-600 mb-6">
-            Subscribe to our newsletter for the latest updates and roadside safety tips.
-          </p>
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-            <Input
-              placeholder="Enter your email"
-              className="flex-grow"
-            />
-            <Button>Subscribe</Button>
+        <div className="container mx-auto px-6">
+          <h2 className="text-3xl font-bold mb-8 text-center">ReadyAssist Business Verticals</h2>
+          
+          <div className="flex flex-wrap justify-center gap-8">
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
+                <Wrench className="w-8 h-8" />
+              </div>
+              <span className="text-sm">Roadside Assistance</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
+                <Car className="w-8 h-8" />
+              </div>
+              <span className="text-sm">Vehicle Service</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
+                <Truck className="w-8 h-8" />
+              </div>
+              <span className="text-sm">Service Truck</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
+                <Battery className="w-8 h-8" />
+              </div>
+              <span className="text-sm">Battery Service</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 rounded-full bg-gray-200 mb-2 flex items-center justify-center">
+                <Disc2 className="w-8 h-8" />
+              </div>
+              <span className="text-sm">Tyre Service</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* Join Us Section */}
+      <section className="py-16 bg-gradient-to-br from-orange-500 to-red-500 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-1/3 h-full bg-orange-400 clip-triangle"></div>
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="md:w-2/3">
+            <h2 className="text-3xl font-bold mb-4">SERVE WITH US AND EARN MORE</h2>
+            <p className="mb-8">
+              Join us as a service partner and access a wide customer base. Be part of our network of trusted technicians and grow your business.
+            </p>
+            <Button className="bg-white text-black hover:bg-gray-100">Know More</Button>
+
           </div>
         </div>
       </section>
@@ -258,37 +283,18 @@ const Index: React.FC = () => {
                 <li><a href="#" className="text-gray-400 hover:text-white">Fuel Delivery</a></li>
               </ul>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Company</h3>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white">About Us</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Our Team</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Careers</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Contact Us</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white">Privacy Policy</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Contact</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li className="flex items-start">
-                  <MapPin className="h-5 w-5 mr-2 mt-1" />
-                  <span>123 Innovation Drive, Tech Park, India</span>
-                </li>
-                <li className="flex items-center">
-                  <Phone className="h-5 w-5 mr-2" />
-                  <span>+91 1234567890</span>
-                </li>
-                <li className="flex items-center">
-                  <span>support@readyassist.com</span>
-                </li>
-              </ul>
-            </div>
+
           </div>
-          <div className="border-t border-gray-700 mt-12 pt-8">
-            <p className="text-center text-gray-400">
-              © 2025 ReadyAssist. All rights reserved.
-            </p>
+        </div>
+      </section>
+      
+      {/* Footer */}
+      <footer className="bg-black text-white py-8">
+        <div className="container mx-auto px-6">
+          <div className="text-center">
+            <p className="text-lg font-bold mb-2">ReadyAssist</p>
+            <p className="text-sm opacity-75">© {new Date().getFullYear()} All Rights Reserved</p>
+
           </div>
         </div>
       </footer>

@@ -383,4 +383,63 @@ exports.showreqtohos = async (req, res) => {
               });
             }
           };
+          
+          exports.getAllEmergencyLocations = async (req, res) => {
+            try {
+              const token = req.cookies.jwt_signup || req.cookies.jwt_login;
+              if (!token) {
+                return res.status(401).json({
+                  success: false,
+                  message: "Unauthorized"
+                });
+              }
+          
+              const decoded = jwt.verify(token, process.env.JWT_SECRET);
+              const serviceProviderId = decoded.id;
+          
+              // Get service provider's location
+              const serviceProvider = await ServiceProvider.findById(serviceProviderId);
+              if (!serviceProvider) {
+                return res.status(404).json({
+                  success: false,
+                  message: "Service provider not found"
+                });
+              }
+          
+              // Find all emergency requests within 10km radius
+              const emergencyRequests = await Emergency.find({
+                latlon: {
+                  $near: {
+                    $geometry: {
+                      type: 'Point',
+                      coordinates: serviceProvider.latlon.coordinates
+                    },
+                    $maxDistance: 10000 // 10 km radius
+                  }
+                }
+              }).populate('user', 'name mobile location');
+          
+              // Separate pending and accepted requests
+              const pendingRequests = emergencyRequests.filter(req => req.status === 'pending');
+              const acceptedRequests = emergencyRequests.filter(req => req.status === 'accepted');
+          
+              return res.status(200).json({
+                success: true,
+                data: {
+                  serviceProvider: {
+                    location: serviceProvider.latlon,
+                    name: serviceProvider.name
+                  },
+                  pendingRequests,
+                  acceptedRequests
+                }
+              });
+            } catch (error) {
+              console.error("Error fetching emergency locations:", error);
+              return res.status(500).json({
+                success: false,
+                message: "Internal server error"
+              });
+            }
+          };
                     
