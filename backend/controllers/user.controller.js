@@ -20,27 +20,40 @@ exports.getUserProfile = async (req, res) => {
 // Update user profile
 exports.updateUserProfile = async (req, res) => {
   try {
-    const { name, email, mobile, location, latlon, other_contact } = req.body;
+    // Get user ID from JWT token (set by auth middleware)
+    const userId = req.user?.id;
+    if (!userId) {
+      return responseFormatter(res, 401, false, "Authentication required");
+    }
 
-    // Check if email is being changed and if it's already in use
-    if (email) {
-      const existingUser = await User.findOne({ email, _id: { $ne: req.user.id } });
-      if (existingUser) {
-        return responseFormatter(res, 400, false, "Email already in use");
-      }
+    const { name, mobile, location, other_contact } = req.body;
+
+    // Validate required fields
+    if (!name || !mobile || !location?.state || !location?.district || !location?.city) {
+      return responseFormatter(res, 400, false, "Missing required fields");
+    }
+
+    // Validate mobile number format
+    if (!/^\d{10}$/.test(mobile)) {
+      return responseFormatter(res, 400, false, "Mobile number must be 10 digits");
+    }
+
+    // Check if mobile number is already in use by another user
+    const existingUser = await User.findOne({ mobile, _id: { $ne: userId } });
+    if (existingUser) {
+      return responseFormatter(res, 400, false, "Mobile number already in use");
     }
 
     const updateData = {
-      ...(name && { name }),
-      ...(email && { email }),
-      ...(mobile && { mobile }),
-      ...(location && { location }),
-      ...(latlon && { latlon }),
-      ...(other_contact && { other_contact })
+      name,
+      mobile,
+      location,
+      other_contact: other_contact || []
     };
 
+    // Update user and return updated document
     const user = await User.findByIdAndUpdate(
-      req.user.id,
+      userId,
       { $set: updateData },
       { new: true }
     ).select('-password');

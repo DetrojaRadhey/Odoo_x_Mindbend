@@ -61,7 +61,7 @@ const CreateServiceRequest = () => {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    console.log("submitted")
     if (!location) {
       toast.error("Unable to submit without location data.");
       return;
@@ -96,6 +96,7 @@ const CreateServiceRequest = () => {
         }
       );
 
+      console.log(response);
       toast.success("Service request created successfully!");
       
       // Close the dialog automatically

@@ -16,7 +16,7 @@ const emergencySchema = new mongoose.Schema({
  
   status: {
     type: String,
-    enum: ["pending", "accepted", "closed"],
+    enum: ["pending", "accepted", "closed","deleted_by_user"],
     default: "pending",
   },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
