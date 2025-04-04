@@ -64,7 +64,7 @@ export default function ShowServiceProvider({ providers, title = "Service Provid
   if (!providers || providers.length === 0) {
     return null;
   }
-
+  console.log(providers);
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-lg">{title}</h3>

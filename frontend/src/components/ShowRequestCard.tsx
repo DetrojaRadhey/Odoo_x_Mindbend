@@ -82,6 +82,7 @@ export default function ShowRequestCard() {
   const handleCardClick = (request: Request) => {
     console.log(request);
     
+    // Only navigate to service providers if the request has been accepted
     if (request.service_provider && request.service_provider.length > 0) {
       navigate('/service-providers', { 
         state: { 

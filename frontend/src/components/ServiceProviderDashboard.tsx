@@ -260,18 +260,34 @@ const ServiceProviderDashboard = () => {
                       </div>
                     </div>
                   </CardContent>
-                  {/* <CardFooter className="border-t pt-3">
+                  <CardFooter className="border-t pt-3">
                     <Button 
                       className="w-full"
-                      variant="outline"
-                      onClick={() => {
-                        setSelectedRequest(request);
-                        setSelectedEmergency(null);
+                      onClick={async () => {
+                        try {
+                          console.log("Accepting request:", request.id);
+                          
+                          const response = await axios.post('http://localhost:8080/request/accept-request', {
+                            requestId: request.id
+                          }, {
+                            withCredentials: true
+                          });
+                          
+                          console.log("Response:", response.data);
+                          if (response.data.success) {
+                            // Refresh the pending requests
+                            fetchPendingRequests();
+                          } else {
+                            console.error('Failed to accept request:', response.data.message);
+                          }
+                        } catch (error) {
+                          console.error('Error accepting request:', error);
+                        }
                       }}
                     >
-                      View Details
+                      Accept Request
                     </Button>
-                  </CardFooter> */}
+                  </CardFooter>
                 </Card>
               ))}
             </div>

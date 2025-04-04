@@ -387,3 +387,52 @@ exports.getRequestToServiceProvider = async (req, res) => {
     return responseFormatter(res, 500, false, "Server error", null, err.message);
   }
 };
+
+exports.providerAcceptRequest = async (req, res) => {
+  try {
+    const token = req.cookies.jwt_signup || req.cookies.jwt_login;
+    if (!token) {
+      return responseFormatter(res, 401, false, "No token, authorization denied");
+    }
+
+    // Verify token and get service provider id
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const serviceProviderId = decoded.id;
+    const { requestId } = req.body;
+
+    // Find the request
+    const request = await Request.findById(requestId);
+    
+    if (!request) {
+      return responseFormatter(res, 404, false, "Request not found");
+    }
+
+    // Check if the request is still pending
+    // if (request.status !== 'pending') {
+    //   return responseFormatter(res, 400, false, "Request has already been accepted or closed");
+    // }
+
+    // Check if this service provider is in the list of available providers
+    if (!request.service_provider.includes(serviceProviderId)) {
+      return responseFormatter(res, 400, false, "You are not available for this request");
+    }
+
+    // Update the request with selected provider and change status
+    const updatedRequest = await Request.findByIdAndUpdate(
+      requestId,
+      {
+        $set: {
+          selected_provider: serviceProviderId,
+          status: 'accepted'
+        }
+      },
+      { new: true }
+    ).populate('selected_provider', 'name contact')
+     .populate('user', 'name email mobile');
+
+    return responseFormatter(res, 200, true, "Request accepted successfully", { request: updatedRequest });
+  } catch (err) {
+    console.error("Accept request error:", err);
+    return responseFormatter(res, 500, false, "Server error", null, err.message);
+  }
+};
