@@ -11,5 +11,6 @@ router.post("/mark-as-done", emergencyController.markEmergencyAsDone);
 router.get("/done-emergencies", emergencyController.getDoneRequests);
 router.get("/user-emergencies", emergencyController.getUserEmergencyRequests);
 router.delete("/delete-emergency/:requestId", emergencyController.deleteEmergencyRequest);
+router.get("/map-locations", emergencyController.getAllEmergencyLocations);
 
 module.exports = router;
