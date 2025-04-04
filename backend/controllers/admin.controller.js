@@ -50,8 +50,9 @@ exports.addServiceProvider = async (req, res) => {
                 city
             },
             latlon: {
-                latitude,
-                longitude
+                // latitude,
+                // longitude
+                coordinates: [longitude, latitude]
             },
             rating: 0,        // Default value
             service_count: 0   // Default value
