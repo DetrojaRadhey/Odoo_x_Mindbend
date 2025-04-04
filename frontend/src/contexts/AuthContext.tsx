@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (email: string, password: string, role: AuthUserType): Promise<void> => {
     setIsLoading(true);
     try {
-      const response = await axios.post('http://localhost:8080/auth/login', 
+      const response = await axios.post('http://localhost:3000/auth/login', 
         { email, password },
         { withCredentials: true }
       );

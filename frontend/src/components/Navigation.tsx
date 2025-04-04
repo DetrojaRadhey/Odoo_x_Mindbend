@@ -41,30 +41,14 @@ const Navigation = () => {
         { name: "Fuel-Delivery", icon: <Fuel className="h-5 w-5 mr-2" />, description: "Petrol/Diesel delivered faster" },
       ]
     }
-    // {
-    //   title: "Fitment Services",
-    //   services: [
-    //     { name: "Fitment Service", icon: <Wrench className="h-5 w-5 mr-2" />, description: "Make your vehicle upgrade" },
-    //     { name: "Dashcam Installation", icon: <Camera className="h-5 w-5 mr-2" />, description: "Capture every driving moment" },
-    //     { name: "Seat Cover Installation", icon: <Sofa className="h-5 w-5 mr-2" />, description: "Upgrade your comfort and style" },
-    //     { name: "Multimedia System Installation", icon: <MonitorPlay className="h-5 w-5 mr-2" />, description: "Enhance your driving experience" },
-    //   ]
-    // },
-    // {
-    //   title: "General Repair Services",
-    //   services: [
-    //     { name: "Car Inspection", icon: <FileCheck className="h-5 w-5 mr-2" />, description: "Get your car inspected" },
-    //     { name: "Bike Express Services", icon: <Wrench className="h-5 w-5 mr-2" />, description: "Full bike service at your doorstep" },
-    //   ]
-    // }
   ];
 
   return (
-    <nav className="bg-white text-black shadow-md">
+    <nav className="bg-white shadow-md py-4">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Link to="/" className="font-bold text-lg flex items-center">
+            <Link to="/" className="font-bold text-xl flex items-center">
               <div className="bg-yellow-400 p-2 rounded-md mr-2">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M13 2L3 14h9l-1 8 10-16h-9l1-4z" />
@@ -74,13 +58,13 @@ const Navigation = () => {
             </Link>
           </div>
           
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-6">
             <Link
               to="/"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
+              className={`font-medium ${
                 isActive("/") 
-                  ? "text-primary font-bold" 
-                  : "hover:text-primary"
+                  ? "text-blue-600 font-semibold" 
+                  : "text-gray-800 hover:text-blue-600"
               }`}
             >
               Home
@@ -89,14 +73,14 @@ const Navigation = () => {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    isActive("/services") ? "text-primary font-bold" : ""
+                  <NavigationMenuTrigger className={`font-medium ${
+                    isActive("/services") ? "text-blue-600 font-semibold" : "text-gray-800 hover:text-blue-600"
                   }`}>Services</NavigationMenuTrigger>
                   <NavigationMenuContent>
                     <div className="w-[400px] p-4 bg-white rounded-lg shadow-lg">
                       {serviceCategories.map((category, i) => (
                         <div key={i} className="space-y-3">
-                          <h3 className="font-medium text-lg border-b pb-2">{category.title}</h3>
+                          <h3 className="font-medium text-lg border-b pb-2 text-gray-900">{category.title}</h3>
                           <ul className="space-y-2">
                             {category.services.map((service, j) => (
                               <li key={j}>
@@ -104,14 +88,14 @@ const Navigation = () => {
                                   <Link
                                     to={`/service-request?type=${service.name}`}
                                     className={cn(
-                                      "block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                                      "block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-blue-50 focus:bg-blue-50",
                                       "flex items-center gap-2"
                                     )}
                                   >
                                     {service.icon}
                                     <div>
-                                      <div className="text-sm font-medium leading-none mb-1">{service.name}</div>
-                                      <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                                      <div className="text-sm font-medium leading-none mb-1 text-gray-900">{service.name}</div>
+                                      <p className="line-clamp-2 text-xs leading-snug text-gray-600">
                                         {service.description}
                                       </p>
                                     </div>
@@ -128,57 +112,12 @@ const Navigation = () => {
               </NavigationMenuList>
             </NavigationMenu>
 
-            {/* <Link
-              to="/subscriptions"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive("/subscriptions") 
-                  ? "text-primary font-bold" 
-                  : "hover:text-primary"
-              }`}
-            >
-              Subscriptions
-            </Link> */}
-            
-            {/* <Link
-              to="/cng-first"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive("/cng-first") 
-                  ? "text-primary font-bold" 
-                  : "hover:text-primary"
-              }`}
-            >
-              <span className="text-blue-600">CNG</span>
-              <span className="text-yellow-500">First</span>
-            </Link> */}
-            
-            {/* <Link
-              to="/mec-plus"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive("/mec-plus") 
-                  ? "text-primary font-bold" 
-                  : "hover:text-primary"
-              }`}
-            >
-              Mec+
-            </Link> */}
-            
-            {/* <Link
-              to="/about"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
-                isActive("/about") 
-                  ? "text-primary font-bold" 
-                  : "hover:text-primary"
-              }`}
-            >
-              About
-            </Link> */}
-
             <Link
               to="/dashboard"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
+              className={`font-medium ${
                 isActive("/dashboard") 
-                  ? "text-primary font-bold" 
-                  : "hover:text-primary"
+                  ? "text-blue-600 font-semibold" 
+                  : "text-gray-800 hover:text-blue-600"
               }`}
             >
               Dashboard
@@ -186,18 +125,17 @@ const Navigation = () => {
             
             <Link
               to="/profile"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
+              className={`font-medium ${
                 isActive("/profile") 
-                  ? "text-primary font-bold" 
-                  : "hover:text-primary"
+                  ? "text-blue-600 font-semibold" 
+                  : "text-gray-800 hover:text-blue-600"
               }`}
             >
               Profile
             </Link>
             
             <Button 
-              variant="outline" 
-              className="ml-4 border-primary-foreground hover:bg-primary-foreground hover:text-primary"
+              className="ml-4 bg-blue-600 hover:bg-blue-700 text-white font-medium"
               onClick={logout}
             >
               Logout
@@ -217,14 +155,14 @@ const Navigation = () => {
       
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-t p-4">
-          <div className="flex flex-col space-y-3">
+        <div className="md:hidden bg-white border-t p-4 mt-4">
+          <div className="flex flex-col space-y-4">
             <Link
               to="/"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
+              className={`px-3 py-2 rounded-md font-medium ${
                 isActive("/") 
-                  ? "bg-primary-foreground text-primary" 
-                  : "hover:bg-primary-foreground/10"
+                  ? "text-blue-600 bg-blue-50" 
+                  : "text-gray-800 hover:bg-blue-50"
               }`}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -235,19 +173,19 @@ const Navigation = () => {
             <div className="space-y-4">
               {serviceCategories.map((category, i) => (
                 <div key={i} className="space-y-2">
-                  <h3 className="font-medium text-lg px-3">{category.title}</h3>
+                  <h3 className="font-medium text-lg px-3 text-gray-900">{category.title}</h3>
                   <div className="space-y-1">
                     {category.services.map((service, j) => (
                       <Link
                         key={j}
                         to={`/service-request?type=${service.name}`}
-                        className="flex items-center px-3 py-2 rounded-md text-sm hover:bg-primary-foreground/10"
+                        className="flex items-center px-3 py-2 rounded-md text-sm hover:bg-blue-50"
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         {service.icon}
                         <div>
-                          <div className="font-medium">{service.name}</div>
-                          <p className="text-xs text-gray-500">{service.description}</p>
+                          <div className="font-medium text-gray-900">{service.name}</div>
+                          <p className="text-xs text-gray-600">{service.description}</p>
                         </div>
                       </Link>
                     ))}
@@ -258,10 +196,10 @@ const Navigation = () => {
 
             <Link
               to="/dashboard"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
+              className={`px-3 py-2 rounded-md font-medium ${
                 isActive("/dashboard") 
-                  ? "bg-primary-foreground text-primary" 
-                  : "hover:bg-primary-foreground/10"
+                  ? "text-blue-600 bg-blue-50" 
+                  : "text-gray-800 hover:bg-blue-50"
               }`}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -270,10 +208,10 @@ const Navigation = () => {
             
             <Link
               to="/profile"
-              className={`px-3 py-2 rounded-md text-sm font-medium ${
+              className={`px-3 py-2 rounded-md font-medium ${
                 isActive("/profile") 
-                  ? "bg-primary-foreground text-primary" 
-                  : "hover:bg-primary-foreground/10"
+                  ? "text-blue-600 bg-blue-50" 
+                  : "text-gray-800 hover:bg-blue-50"
               }`}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -281,8 +219,7 @@ const Navigation = () => {
             </Link>
             
             <Button 
-              variant="outline" 
-              className="w-full border-primary-foreground hover:bg-primary-foreground hover:text-primary"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium"
               onClick={() => {
                 logout();
                 setMobileMenuOpen(false);

@@ -16,6 +16,7 @@ export interface ServiceProvider {
 
 export interface User {
   id: string;
+  _id?: string;
   name: string;
   mobile: string;
   location: {

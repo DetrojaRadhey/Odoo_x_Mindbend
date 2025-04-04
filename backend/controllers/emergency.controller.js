@@ -21,11 +21,29 @@ exports.saveemergency = async (req, res) => {
             return res.status(400).json(responseFormatter(false, "Invalid user ID format"));
         }
 
+        // Check for existing emergency requests in the last hour
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000); // 1 hour ago
+        const existingRequest = await Emergency.findOne({
+            user: new mongoose.Types.ObjectId(userid),
+            created_at: { $gte: oneHourAgo },
+            status: { $in: ['pending', 'accepted'] }
+        });
+
+        if (existingRequest) {
+            const timeDiff = Math.floor((Date.now() - existingRequest.created_at.getTime()) / (1000 * 60)); // difference in minutes
+            return res.status(200).json({
+              success: false,
+                message: `You already have an active emergency request. Please wait ${60 - timeDiff} minutes before creating a new request.`,
+            });
+        }
+
+        
         // Create emergency request
         const emergencyReq = new Emergency({
             latlon: { type: "Point", coordinates: [longitude, latitude] },
-            user: new mongoose.Types.ObjectId(userid), // Ensure it's an ObjectId
+            user: new mongoose.Types.ObjectId(userid),
             status: "pending",
+            created_at: new Date()
         });
 
         await emergencyReq.save();

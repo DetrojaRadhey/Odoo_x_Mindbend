@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/contexts/AuthContext";
-import { emergencyService } from "@/services/emergency.service";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
-const CreateEmergencyRequest = () => {
-  const { currentUser } = useAuth();
+interface CreateEmergencyRequestProps {
+  onSubmit: (data: { latitude: number; longitude: number }) => Promise<void>;
+}
+
+const CreateEmergencyRequest: React.FC<CreateEmergencyRequestProps> = ({ onSubmit }) => {
   const [loading, setLoading] = useState(false);
   const [location, setLocation] = useState({
     latitude: "",
@@ -18,11 +19,6 @@ const CreateEmergencyRequest = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!currentUser?.id) {
-      toast.error("Please login to create an emergency request");
-      return;
-    }
-
     if (!location.latitude || !location.longitude) {
       toast.error("Please provide both latitude and longitude");
       return;
@@ -30,20 +26,10 @@ const CreateEmergencyRequest = () => {
 
     try {
       setLoading(true);
-      const response = await emergencyService.saveEmergency(
-        parseFloat(location.latitude),
-        parseFloat(location.longitude),
-        currentUser.id
-      );
-
-      if (response.success) {
-        toast.success("Emergency request sent successfully");
-        // Close the dialog
-        const closeButton = document.querySelector('[data-dialog-close]');
-        if (closeButton instanceof HTMLElement) {
-          closeButton.click();
-        }
-      }
+      await onSubmit({
+        latitude: parseFloat(location.latitude),
+        longitude: parseFloat(location.longitude)
+      });
     } catch (error) {
       console.error("Error creating emergency request:", error);
       toast.error("Failed to create emergency request");

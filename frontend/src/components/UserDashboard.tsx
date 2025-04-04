@@ -22,6 +22,7 @@ const UserDashboard = () => {
   const [selectedEmergency, setSelectedEmergency] = useState<EmergencyRequest | null>(null);
   const [emergencyRequests, setEmergencyRequests] = useState<EmergencyRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [createEmergencyDialogOpen, setCreateEmergencyDialogOpen] = useState(false);
   
   // Get user requests
   const requests = getUserRequests();
@@ -74,6 +75,47 @@ const UserDashboard = () => {
     } catch (error) {
       console.error("Error deleting emergency:", error);
       toast.error("Failed to delete emergency request");
+    }
+  };
+  
+  const handleCreateEmergency = async (data: { latitude: number; longitude: number }) => {
+    try {
+      if (!currentUser) {
+        toast.error("User not authenticated");
+        return;
+      }
+
+      // Get the user ID, checking both possible properties
+      const userId = ('_id' in currentUser) ? currentUser._id : 
+                    ('id' in currentUser) ? currentUser.id : null;
+
+      if (!userId) {
+        toast.error("User ID not found");
+        return;
+      }
+
+      const response = await emergencyService.saveEmergency(
+        data.latitude,
+        data.longitude,
+        userId
+      );
+
+      console.log(response);
+
+      if (response.success) {
+        if (response.data) {
+          toast.success("Emergency request created successfully");
+          setCreateEmergencyDialogOpen(false);
+          fetchEmergencyRequests();
+        } else {
+          toast.warning(response.message);
+        }
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      console.error("Error creating emergency request:", error);
+      toast.error("Failed to create emergency request");
     }
   };
   
@@ -141,7 +183,7 @@ const UserDashboard = () => {
               </DialogContent>
             </Dialog>
             
-            <Dialog>
+            <Dialog open={createEmergencyDialogOpen} onOpenChange={setCreateEmergencyDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="destructive" className="w-full">
                   <AlertTriangle className="h-4 w-4 mr-2" />
@@ -155,7 +197,7 @@ const UserDashboard = () => {
                     Submit an emergency request for immediate assistance
                   </DialogDescription>
                 </DialogHeader>
-                <CreateEmergencyRequest />
+                <CreateEmergencyRequest onSubmit={handleCreateEmergency} />
               </DialogContent>
             </Dialog>
           </CardContent>

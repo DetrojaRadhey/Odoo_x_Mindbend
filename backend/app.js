@@ -18,7 +18,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 app.use(
   cors({
-    origin: ["http://localhost:5173","http://192.168.56.1:5173"], // Or an array of allowed origins
+    origin: ["http://localhost:5173","http://192.168.56.1:5173","*"], // Or an array of allowed origins
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "UPDATE"], // This allows cookies to be sent with requests.
   })
