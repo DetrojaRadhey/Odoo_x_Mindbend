@@ -99,7 +99,7 @@ exports.showreqtohos = async (req, res) => {
                       type: 'Point',
                       coordinates: [longitude, latitude]
                   },
-                  $maxDistance: 10000 // 10 km
+                  $maxDistance: 30000 // 10 km
               }
           }
       }).populate('user', 'name mobile');

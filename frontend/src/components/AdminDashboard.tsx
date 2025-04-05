@@ -23,7 +23,7 @@ const AdminDashboard = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/admin/add-service-provider', {
+      const response = await axios.post('http://localhost:3000/admin/add-service-provider', {
         type: formData.type,
         name: formData.name,
         password: formData.password,

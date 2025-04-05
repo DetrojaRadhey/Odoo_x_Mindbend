@@ -53,7 +53,7 @@ const AIChatClient: React.FC<AIChatClientProps> = ({ isExpanded, setIsExpanded }
       setMessages((prev) => [...prev, { text: inputMessage, type: "user" }]);
 
       // Replace with your actual API endpoint
-      const response = await axios.post(`http://localhost:8080/request/chat`, {
+      const response = await axios.post(`http://localhost:3000/request/chat`, {
         input_value: inputMessage
       });
 
