@@ -189,7 +189,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = () => {
     // try {
-    //   await axios.post('http://localhost:8080/auth/logout', {}, { withCredentials: true });
+    //   await axios.post('http://localhost:3000/auth/logout', {}, { withCredentials: true });
     //   setCurrentUser(null);
     //   toast.success("Logged out successfully!");
     // } catch (error) {

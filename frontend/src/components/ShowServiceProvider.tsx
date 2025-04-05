@@ -38,7 +38,7 @@ interface ShowServiceProviderProps {
 export default function ShowServiceProvider({ providers, title = "Service Providers", requestVehicle, serviceId }: ShowServiceProviderProps) {
   const handleMakeRequest = async (providerId: string) => {
     try {
-      const response = await axios.post('http://localhost:8080/request/accept-provider', {
+      const response = await axios.post('http://localhost:3000/request/accept-provider', {
         serviceId,
         providerId
       }, {

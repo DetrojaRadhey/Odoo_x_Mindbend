@@ -46,7 +46,7 @@ export default function ShowRequestCard() {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/request/my-requests', {
+        const response = await axios.get('http://localhost:3000/request/my-requests', {
             withCredentials: true,
             headers: {
               'Content-Type': 'application/json'

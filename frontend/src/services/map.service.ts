@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { EmergencyRequest } from '@/types';
 
-const API_URL = 'http://localhost:8080';
+const API_URL = 'http://localhost:3000';
 
 export interface MapLocation {
   serviceProvider: {
