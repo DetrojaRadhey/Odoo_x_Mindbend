@@ -243,9 +243,9 @@ exports.cancelRequest = async (req, res) => {
     // Verify token and get user id
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
-
+    console.log("params", req.params.id);
     const request = await Request.findById(req.params.id);
-
+    console.log("request", request);
     if (!request) {
       return responseFormatter(res, 404, false, "Request not found");
     }
@@ -497,6 +497,56 @@ exports.checkAcceptedRequest = async (req, res) => {
     });
   } catch (err) {
     console.error("Get accepted requests error:", err);
+    return responseFormatter(res, 500, false, "Server error", null, err.message);
+  }
+};
+
+// Complete a request (service provider marks a request as completed)
+exports.completeRequest = async (req, res) => {
+  try {
+    // Get token from either jwt_signup or jwt_login cookie
+    const token = req.cookies.jwt_signup || req.cookies.jwt_login;
+    if (!token) {
+      return responseFormatter(res, 401, false, "No token, authorization denied");
+    }
+
+    // Verify token and get service provider id
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const serviceProviderId = decoded.id;
+    const { requestId } = req.body;
+
+    if (!requestId) {
+      return responseFormatter(res, 400, false, "Request ID is required");
+    }
+
+    // Find the request
+    const request = await Request.findById(requestId);
+    
+    if (!request) {
+      return responseFormatter(res, 404, false, "Request not found");
+    }
+
+    // Check if this service provider is the selected provider for this request
+    if (request.selected_provider.toString() !== serviceProviderId) {
+      return responseFormatter(res, 403, false, "Not authorized to complete this request");
+    }
+
+    // Check if the request is in accepted status
+    if (request.status !== 'accepted') {
+      return responseFormatter(res, 400, false, "Only accepted requests can be completed");
+    }
+
+    // Update the request status to closed
+    const updatedRequest = await Request.findByIdAndUpdate(
+      requestId,
+      { $set: { status: 'closed' } },
+      { new: true }
+    ).populate('selected_provider', 'name contact')
+     .populate('user', 'name email mobile');
+
+    return responseFormatter(res, 200, true, "Request completed successfully", { request: updatedRequest });
+  } catch (err) {
+    console.error("Complete request error:", err);
     return responseFormatter(res, 500, false, "Server error", null, err.message);
   }
 };

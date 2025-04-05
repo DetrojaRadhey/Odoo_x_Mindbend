@@ -33,9 +33,16 @@ interface ShowServiceProviderProps {
   title?: string;
   requestVehicle?: VehicleInfo;
   serviceId?: string;
+  onProviderSelected?: (providerId: string) => void;
 }
 
-export default function ShowServiceProvider({ providers, title = "Service Providers", requestVehicle, serviceId }: ShowServiceProviderProps) {
+export default function ShowServiceProvider({ 
+  providers, 
+  title = "Service Providers", 
+  requestVehicle, 
+  serviceId,
+  onProviderSelected 
+}: ShowServiceProviderProps) {
   const handleMakeRequest = async (providerId: string) => {
     try {
       const response = await axios.post('http://localhost:3000/request/accept-provider', {
@@ -48,6 +55,10 @@ export default function ShowServiceProvider({ providers, title = "Service Provid
       if (response.data.success) {
         // Handle success (you might want to show a success message or redirect)
         console.log('Provider accepted successfully');
+        // Call the callback to remove this provider from the list
+        if (onProviderSelected) {
+          onProviderSelected(providerId);
+        }
       } else {
         // Handle error
         console.error('Failed to accept provider:', response.data.message);

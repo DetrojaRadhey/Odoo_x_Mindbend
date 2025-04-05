@@ -12,9 +12,7 @@ import { RequestTitle } from "@/types";
 import { toast } from "@/lib/toast";
 import { Loader2 } from "lucide-react";
 import axios from "axios";
-
 const vehicleTypes = ["bike", "car"];
-// const navigateTo = useNavigate();
 
 const requestTitles: RequestTitle[] = [
   "Towing",
@@ -34,6 +32,7 @@ const ServiceRequest = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [location, setLocation] = useState<{lat: number, lon: number} | null>(null);
+  const navigate = useNavigate();
   
   // Form state
   const [title, setTitle] = useState<RequestTitle>("Towing");
@@ -127,7 +126,7 @@ const ServiceRequest = () => {
         
       );
       console.log(response);
-      // navigateTo("/show-provider");
+      navigate("/dashboard");
       toast.success("Service request created successfully!");
       
       // Close the dialog automatically
@@ -135,6 +134,7 @@ const ServiceRequest = () => {
       if (closeButton) {
         (closeButton as HTMLButtonElement).click();
       }
+
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error("Failed to create service request: " + (error.response?.data?.message || error.message));

@@ -42,6 +42,7 @@ const ServiceProviderDashboard = () => {
 
   // Add this state near your other state declarations
   const [acceptedServiceRequests, setAcceptedServiceRequests] = useState<any[]>([]);
+  const [completedServiceRequests, setCompletedServiceRequests] = useState<any[]>([]);
 
   const fetchPendingRequests = async () => {
     try {
@@ -108,6 +109,38 @@ const ServiceProviderDashboard = () => {
     }
   };
 
+  // Add this function to fetch completed requests
+  const fetchCompletedServiceRequests = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      // Get requests where status is closed
+      const response = await axios.get('http://localhost:3000/request/provider/requests', {
+        withCredentials: true
+      });
+      
+      if (response.data.success) {
+        const requests = response.data.data.requests;
+        if (requests && typeof requests === 'object' && requests.closed && Array.isArray(requests.closed)) {
+          setCompletedServiceRequests(requests.closed);
+        } else {
+          setCompletedServiceRequests([]);
+        }
+      } else {
+        setCompletedServiceRequests([]);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message || 'Failed to fetch completed requests');
+      } else {
+        setError('An unexpected error occurred');
+      }
+      setCompletedServiceRequests([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Update your handleTabClick function to fetch both types of requests
   const handleTabClick = (value: string) => {
     setActiveTab(value);
@@ -116,6 +149,9 @@ const ServiceProviderDashboard = () => {
     } else if (value === 'active') {
       fetchAcceptedServiceRequests();
       fetchAllData(); // Keep this to fetch emergency data
+    } else if (value === 'completed') {
+      fetchCompletedServiceRequests();
+      fetchAllData(); // Also fetch emergency data for the completed tab
     }
   };
    
@@ -158,6 +194,7 @@ const ServiceProviderDashboard = () => {
     fetchAllData();
     fetchPendingRequests();
     fetchAcceptedServiceRequests();
+    fetchCompletedServiceRequests();
     // Set up polling interval
     // const interval = setInterval(fetchAllData, 30000); // Refresh every 30 seconds
 
@@ -182,16 +219,31 @@ const ServiceProviderDashboard = () => {
       if (isEmergency) {
         const response = await emergencyService.markEmergencyAsDone(id);
         if (response.success) {
-          toast.success("Emergency request completed successfully");
+          toast.success("Emergency request closed successfully");
           await fetchAllData(); // Refresh all data
         }
       } else {
-        // Handle service request completion with existing function
-        await updateServiceRequestStatus(id, "closed");
+        // Call the new complete-request endpoint
+        const response = await axios.post('http://localhost:3000/request/complete-request', {
+          requestId: id
+        }, {
+          withCredentials: true
+        });
+        
+        if (response.data.success) {
+          toast.success("Request closed successfully");
+          // Refresh the service requests data
+          fetchAcceptedServiceRequests();
+          fetchCompletedServiceRequests();
+          // Switch to the completed tab
+          setActiveTab("completed");
+        } else {
+          toast.error(response.data.message || "Failed to close request");
+        }
       }
     } catch (error) {
       console.error("Error closing request:", error);
-      toast.error("Failed to complete request");
+      toast.error("Failed to close request");
     }
   };
 
@@ -262,7 +314,7 @@ const ServiceProviderDashboard = () => {
                 <p className="text-2xl font-bold">
                   {(closedRequests?.length || 0) + (closedEmergencyRequests?.length || 0)}
                 </p>
-                <p className="text-sm text-muted-foreground">Completed</p>
+                <p className="text-sm text-muted-foreground">Closed</p>
               </div>
             </div>
             <Button 
@@ -345,7 +397,7 @@ const ServiceProviderDashboard = () => {
             {error && <span className="text-red-500 ml-2">!</span>}
           </TabsTrigger>
           <TabsTrigger value="active" >Active Requests</TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
+          <TabsTrigger value="completed">Closed Requests</TabsTrigger>
         </TabsList>
         
         <TabsContent value="pending" className="space-y-4">
@@ -562,7 +614,7 @@ const ServiceProviderDashboard = () => {
                         variant="destructive"
                         onClick={() => handleCloseRequest(request._id || request.id, true)}
                       >
-                        Complete
+                        Close
                       </Button>
                     )}
                   </CardFooter>
@@ -616,7 +668,7 @@ const ServiceProviderDashboard = () => {
                       variant="default"
                       onClick={() => handleCloseRequest(request.id, false)}
                     >
-                      Complete
+                      Close
                     </Button>
                   </CardFooter>
                 </Card>
@@ -626,15 +678,15 @@ const ServiceProviderDashboard = () => {
         </TabsContent>
         
         <TabsContent value="completed" className="space-y-4">
-          {closedRequests.length === 0 && processedClosedEmergencies.length === 0 ? (
+          {closedRequests.length === 0 && processedClosedEmergencies.length === 0 && completedServiceRequests.length === 0 ? (
             <Card>
               <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground">No completed requests</p>
+                <p className="text-muted-foreground">No closed requests</p>
               </CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[...closedRequests.filter(req => req && req.user), ...processedClosedEmergencies]
+              {[...closedRequests.filter(req => req && req.user), ...processedClosedEmergencies, ...completedServiceRequests]
                 .map((request: any, index) => (
                   <Card key={index} className={`overflow-hidden opacity-80 ${
                     request.status === 'deleted_by_user' ? 'border-yellow-500/50' : ''
@@ -657,7 +709,7 @@ const ServiceProviderDashboard = () => {
                           {request.title || 'Untitled Request'}
                         </CardTitle>
                         <Badge variant={request.status === 'deleted_by_user' ? 'default' : 'outline'}>
-                          {request.status === 'deleted_by_user' ? 'Deleted by User' : 'Completed'}
+                          {request.status === 'deleted_by_user' ? 'Deleted by User' : 'Closed'}
                         </Badge>
                       </div>
                     </CardHeader>

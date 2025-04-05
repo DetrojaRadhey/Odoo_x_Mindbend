@@ -52,6 +52,8 @@ export default function ShowRequestCard() {
               'Content-Type': 'application/json'
             }
           });
+          console.log(response.data);
+          
         if (response.data.success) {
           setRequests(response.data.data.requests);
         } else {
@@ -68,16 +70,21 @@ export default function ShowRequestCard() {
     fetchRequests();
   }, []);
 
-//   const handleCancelRequest = async (requestId: string) => {
-//     try {
-//       const response = await axios.delete(`http://localhost:5000/api/request/${requestId}`);
-//       if (response.data.success) {
-//         setRequests(requests.filter(request => request._id !== requestId));
-//       }
-//     } catch (err) {
-//       console.error('Error cancelling request:', err);
-//     }
-//   };
+  const handleCancelRequest = async (requestId: string) => {
+    try {
+      const response = await axios.delete(`http://localhost:3000/request/delete/${requestId}`, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.data.success) {
+        setRequests(requests.filter(request => request._id !== requestId));
+      }
+    } catch (err) {
+      console.error('Error cancelling request:', err);
+    }
+  };
 
   const handleCardClick = (request: Request) => {
     console.log(request);
@@ -212,12 +219,15 @@ export default function ShowRequestCard() {
                       >
                         Edit
                       </Button> */}
-                      {/* <Button
+                      <Button
                         variant="destructive"
-                        onClick={() => handleCancelRequest(request._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancelRequest(request._id);
+                        }}
                       >
                         Cancel
-                      </Button> */}
+                      </Button>
                     </div>
                   )}
                 </div>

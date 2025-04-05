@@ -160,7 +160,7 @@ const UserDashboard = () => {
                   {requests.filter(req => req.status === "closed").length + 
                    emergencyRequests.filter(req => req.status === "closed").length}
                 </p>
-                <p className="text-sm text-muted-foreground">Completed Requests</p>
+                <p className="text-sm text-muted-foreground">Closed Requests</p>
               </CardContent>
             </Card>
           </div>
@@ -272,7 +272,7 @@ const UserDashboard = () => {
                           size="sm"
                           onClick={() => handleCloseRequest(request.id, false)}
                         >
-                          Mark as Resolved
+                          Mark as Closed
                         </Button>
                       )}
                     </CardFooter>
@@ -380,7 +380,7 @@ const UserDashboard = () => {
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">
                         <CardTitle className="text-lg">{request.title}</CardTitle>
-                        <Badge variant="outline">Resolved</Badge>
+                        <Badge variant="outline">Closed</Badge>
                       </div>
                       <CardDescription>{formatDate(request.created_at)}</CardDescription>
                     </CardHeader>
@@ -423,7 +423,7 @@ const UserDashboard = () => {
                           <AlertTriangle className="h-4 w-4 mr-1" />
                           Emergency
                         </CardTitle>
-                        <Badge variant="outline">Resolved</Badge>
+                        <Badge variant="outline">Closed</Badge>
                       </div>
                       <CardDescription>{formatDate(request.created_at)}</CardDescription>
                     </CardHeader>
@@ -471,7 +471,9 @@ const UserDashboard = () => {
             <RequestDetailsCard 
               request={selectedRequest} 
               isEmergency={false}
-              onClose={() => handleCloseRequest(selectedRequest.id, false)}
+              onClose={selectedRequest.status !== "closed" ? 
+                () => handleCloseRequest(selectedRequest.id, false) : 
+                undefined}
             />
           </DialogContent>
         </Dialog>
@@ -487,7 +489,9 @@ const UserDashboard = () => {
             <RequestDetailsCard 
               request={selectedEmergency} 
               isEmergency={true}
-              onClose={() => handleCloseRequest(selectedEmergency.id, true)}
+              onClose={selectedEmergency.status !== "closed" ? 
+                () => handleCloseRequest(selectedEmergency.id, true) : 
+                undefined}
             />
           </DialogContent>
         </Dialog>
