@@ -79,22 +79,27 @@ exports.showreqtohos = async (req, res) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const userId = decoded.id;
 
-      const serviceProviders = await ServiceProvider.findById(userId);
-      if (!serviceProviders) {
+      const serviceProvider = await ServiceProvider.findById(userId);
+      if (!serviceProvider) {
           return res.status(404).json({ message: "Service provider not found" });
       }
 
-      console.log('Service Provider Location:', serviceProviders.latlon);
-      
-      // First, let's check all pending requests without geo filtering
-      const allPendingRequests = await Emergency.find({ status: 'pending' }).populate('user', 'name mobile');
-      console.log('All Pending Requests:', allPendingRequests);
+      console.log('Service Provider Location:', serviceProvider.latlon);
 
-      if (!serviceProviders.latlon || !Array.isArray(serviceProviders.latlon.coordinates)) {
+      // If not Hospital, return empty array
+      if (serviceProvider.type !== "Hospital") {
+          return res.status(200).json({
+              success: true,
+              message: "No requests for this provider type",
+              data: []
+          });
+      }
+
+      if (!serviceProvider.latlon || !Array.isArray(serviceProvider.latlon.coordinates)) {
           return res.status(400).json({ message: "Invalid location data for service provider" });
       }
 
-      const [longitude, latitude] = serviceProviders.latlon.coordinates;
+      const [longitude, latitude] = serviceProvider.latlon.coordinates;
       console.log('Provider coordinates:', { longitude, latitude });
 
       const requests = await Emergency.find({
@@ -115,7 +120,7 @@ exports.showreqtohos = async (req, res) => {
       return res.status(200).json({
           success: true,
           message: requests.length ? "Requests retrieved successfully" : "No requests found",
-          data: requests || []
+          data: requests
       });
 
   } catch (error) {
@@ -123,6 +128,7 @@ exports.showreqtohos = async (req, res) => {
       return res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
         exports.acceptEmergency = async (req, res) => {
             try {

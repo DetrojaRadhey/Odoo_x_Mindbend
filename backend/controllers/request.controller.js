@@ -62,13 +62,14 @@ exports.createRequest = async (req, res) => {
     // Updated query for nearby service providers
     const nearbyServiceProviders = await ServiceProvider.find({
       isAvailable: true,
+      type: "Mechanical",
       latlon: {
         $nearSphere: {
           $geometry: {
             type: "Point",
             coordinates: [lng, lat]
           },
-          $maxDistance: 30000 // 30km in meters
+          $maxDistance: 10000000 // 30km in meters
         }
       }
     }).select('_id name contact location rating'); // ✅ Ensure _id is included
@@ -548,6 +549,66 @@ exports.completeRequest = async (req, res) => {
   } catch (err) {
     console.error("Complete request error:", err);
     return responseFormatter(res, 500, false, "Server error", null, err.message);
+
+exports.getRequestLocationMap = async (req, res) => {
+  try {
+    const token = req.cookies.jwt_signup || req.cookies.jwt_login;
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized"
+      });
+    }
+
+    const { requestId } = req.params;
+    if (!requestId) {
+      return res.status(400).json({
+        success: false,
+        message: "Request ID is required"
+      });
+    }
+
+    // Find the request and populate user and service providers
+    const request = await Request.findById(requestId)
+      .populate('user', 'name mobile')
+      .populate('service_provider', 'name type contact latlon');
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: "Request not found"
+      });
+    }
+
+    // Format the data for the map view
+    const mapData = {
+      request: {
+        location: request.latlon,
+        title: request.title,
+        status: request.status,
+        vehicleInfo: request.vehical_info,
+        user: request.user
+      },
+      serviceProviders: request.service_provider.map(provider => ({
+        id: provider._id,
+        name: provider.name,
+        type: provider.type,
+        contact: provider.contact,
+        location: provider.latlon
+      }))
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Request map data retrieved successfully",
+      data: mapData
+    });
+  } catch (error) {
+    console.error("Error fetching request map data:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
   }
 };
 

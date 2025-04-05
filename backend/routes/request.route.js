@@ -22,4 +22,7 @@ router.post('/accept-request', requestController.providerAcceptRequest);
 // Chat with AI
 router.post('/chat', userController.AskToAI);
 
+// Map routes
+router.get('/map/:requestId', requestController.getRequestLocationMap);
+
 module.exports = router;
