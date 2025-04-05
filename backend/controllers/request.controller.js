@@ -71,9 +71,9 @@ exports.createRequest = async (req, res) => {
           $maxDistance: 10000 // 10km in meters
         }
       }
-    }).select('name contact location rating');
+    }).select('_id name contact location rating');
     // console.log(nearbyServiceProviders);
-
+    console.log("nearbyServiceProviders", nearbyServiceProviders);
     
     const allserviceproviders = []; 
     if (nearbyServiceProviders.length > 0) {
@@ -107,7 +107,7 @@ exports.createRequest = async (req, res) => {
     
     const populatedRequest = await Request.findById(request._id)
       .populate('service_provider');
-    console.log(populatedRequest);
+    console.log(populatedRequest+"populatedRequest");
     
     return responseFormatter(res, 201, true, "Request created successfully", { 
       request,
