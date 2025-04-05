@@ -1,15 +1,16 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import ShowServiceProvider from "@/components/ShowServiceProvider";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Map } from "lucide-react";
+import { useState } from "react";
+import RequestMap from "@/components/RequestMap";
 
 export default function ServiceProvidersPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { providers, requestTitle, requestVehicle, serviceId } = location.state || {};
-  console.log("Service ID:", serviceId);
+  const [showMap, setShowMap] = useState(false);
   
-
   if (!providers) {
     return (
       <div className="container mx-auto py-8 px-4">
@@ -42,6 +43,14 @@ export default function ServiceProvidersPage() {
         <h1 className="text-3xl font-bold">
           Service Providers for {requestTitle}
         </h1>
+        <Button 
+          variant="outline" 
+          className="ml-auto"
+          onClick={() => setShowMap(true)}
+        >
+          <Map className="mr-2 h-4 w-4" />
+          View on Map
+        </Button>
       </div>
       
       <ShowServiceProvider 
@@ -49,6 +58,13 @@ export default function ServiceProvidersPage() {
         title={`Service Providers for ${requestTitle}`}
         requestVehicle={requestVehicle}
         serviceId={serviceId}
+      />
+
+      {/* Map Dialog */}
+      <RequestMap 
+        isOpen={showMap}
+        onClose={() => setShowMap(false)}
+        requestId={serviceId || ''}
       />
     </div>
   );

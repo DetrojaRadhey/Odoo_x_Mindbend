@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Car, Bike, MapPin, Wrench, Clock, User, Phone, Mail } from "lucide-react";
+import { Car, Bike, MapPin, Wrench, Clock, User, Phone, Mail, Map } from "lucide-react";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import RequestMap from "@/components/RequestMap";
 
 interface VehicleInfo {
   type: "bike" | "car";
@@ -41,6 +42,8 @@ export default function ShowRequestCard() {
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [showMap, setShowMap] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -95,6 +98,12 @@ export default function ShowRequestCard() {
     }
   };
 
+  const handleViewMap = (e: React.MouseEvent, requestId: string) => {
+    e.stopPropagation();
+    setSelectedRequestId(requestId);
+    setShowMap(true);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
@@ -128,7 +137,6 @@ export default function ShowRequestCard() {
   }
 
   return (
-    
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-8">My Requests</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -165,67 +173,31 @@ export default function ShowRequestCard() {
                     <span className="text-sm">{request.describe_problem}</span>
                   </div>
 
-                  {/* Service Providers */}
-                  {/* {request.service_provider && request.service_provider.length > 0 && (
-                    <div className="space-y-2">
-                      <h3 className="font-semibold text-sm">Assigned Service Providers:</h3>
-                      {request.service_provider.map((provider) => (
-                        <div key={provider._id} className="pl-7 space-y-1">
-                          <div className="flex items-center space-x-2">
-                            <User className="h-4 w-4 text-green-500" />
-                            <span className="text-sm">{provider.name}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Phone className="h-4 w-4 text-blue-500" />
-                            <span className="text-sm">{provider.contact.mobile}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Mail className="h-4 w-4 text-purple-500" />
-                            <span className="text-sm">{provider.contact.email}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )} */}
-
-                  {/* Request Details */}
-                  {/* <div className="flex items-center space-x-2">
-                    <Clock className="h-5 w-5 text-gray-500" />
-                    <span className="text-sm">
-                      {new Date(request.createdAt).toLocaleString()}
-                    </span>
-                  </div> */}
-
-                  {/* Advance Amount */}
-                  {/* {request.advance > 0 && (
-                    <div className="text-sm font-semibold text-green-600">
-                      Advance: ₹{request.advance}
-                    </div>
-                  )} */}
-
                   {/* Action Buttons */}
-                  {request.status === "pending" && (
-                    <div className="flex space-x-2 pt-2" onClick={(e) => e.stopPropagation()}>
-                      {/* <Button
-                        variant="outline"
-                        onClick={() => navigate(`/edit-request/${request._id}`)}
-                      >
-                        Edit
-                      </Button> */}
-                      {/* <Button
-                        variant="destructive"
-                        onClick={() => handleCancelRequest(request._id)}
-                      >
-                        Cancel
-                      </Button> */}
-                    </div>
-                  )}
+                  <div className="flex space-x-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => handleViewMap(e, request._id)}
+                      className="flex items-center"
+                    >
+                      <Map className="mr-2 h-4 w-4" />
+                      View Map
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
         ))}
       </div>
+
+      {/* Map Dialog */}
+      <RequestMap 
+        isOpen={showMap}
+        onClose={() => setShowMap(false)}
+        requestId={selectedRequestId || ''}
+      />
     </div>
   );
 }
