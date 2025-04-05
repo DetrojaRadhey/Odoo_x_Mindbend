@@ -62,13 +62,14 @@ exports.createRequest = async (req, res) => {
     // Updated query for nearby service providers
     const nearbyServiceProviders = await ServiceProvider.find({
       isAvailable: true,
+      type: "Mechanical",
       latlon: {
         $nearSphere: {
           $geometry: {
             type: "Point",
             coordinates: [lng, lat]
           },
-          $maxDistance: 30000 // 30km in meters
+          $maxDistance: 10000000 // 30km in meters
         }
       }
     }).select('_id name contact location rating'); // ✅ Ensure _id is included
