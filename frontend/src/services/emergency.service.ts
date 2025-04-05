@@ -41,13 +41,26 @@ export const emergencyService = {
   // Get emergency requests for service provider
   getEmergencyRequests: async () => {
     try {
+      console.log('Fetching emergency requests...');
       const response = await axios.get(`${API_URL}/show-emergency`);
-      return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 404) {
-        return { success: true, data: [] }; // Return empty array if no requests found
+      console.log('Emergency requests response:', response.data);
+      
+      if (!response.data.data) {
+        console.warn('No data field in response:', response.data);
       }
-      throw error;
+      
+      return {
+        success: true,
+        data: response.data.data || [],
+        message: response.data.message
+      };
+    } catch (error: any) {
+      console.error("Error fetching emergency requests:", error.response || error);
+      return {
+        success: false,
+        data: [],
+        message: error.response?.data?.message || "Failed to fetch emergency requests"
+      };
     }
   },
 

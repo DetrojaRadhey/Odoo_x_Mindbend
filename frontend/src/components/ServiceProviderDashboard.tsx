@@ -12,7 +12,7 @@ import RequestDetailsCard from "@/components/RequestDetailsCard";
 import DisplayMap from './DisplayMap';
 import RouteMap from './RouteMap';
 // API base URL - should match your backend
-const API_URL = "http://localhost:8080";
+const API_URL = "http://localhost:3000";
 
 import { MapPin, AlertTriangle, CheckCircle2, X, Loader2 } from "lucide-react";
 import { emergencyService } from "@/services/emergency.service";
@@ -47,7 +47,7 @@ const ServiceProviderDashboard = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await axios.get('http://localhost:8080/request/provider/requests', {
+      const response = await axios.get('http://localhost:3000/request/provider/requests', {
         withCredentials: true
       });
       console.log(response.data.data.requests);
@@ -86,7 +86,7 @@ const ServiceProviderDashboard = () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await axios.get('http://localhost:8080/request/checkacceptedrequest', {
+      const response = await axios.get('http://localhost:3000/request/checkacceptedrequest', {
         withCredentials: true
       });
       
@@ -448,7 +448,7 @@ const ServiceProviderDashboard = () => {
                         try {
                           console.log("Accepting request:", request.id);
                           
-                          const response = await axios.post('http://localhost:8080/request/accept-request', {
+                          const response = await axios.post('http://localhost:3000/request/accept-request', {
                             requestId: request.id
                           }, {
                             withCredentials: true

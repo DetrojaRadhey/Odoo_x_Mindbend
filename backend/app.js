@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const port = 8080;
+const port = 3000;
 const mongoose = require("mongoose");
 const User = require("./models/user.model");
 const ejsMate = require("ejs-mate");

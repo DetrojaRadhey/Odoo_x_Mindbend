@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           } as UserAuthUser;
         } else if (userData.role === 'service_provider') {
           authUser = {
-            id: userData.id,
+            _id: userData.id,
             name: userData.name,
             email: userData.email,
             role: 'service_provider',
@@ -189,7 +189,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = () => {
     // try {
-    //   await axios.post('http://localhost:8080/auth/logout', {}, { withCredentials: true });
+    //   await axios.post('http://localhost:3000/auth/logout', {}, { withCredentials: true });
     //   setCurrentUser(null);
     //   toast.success("Logged out successfully!");
     // } catch (error) {

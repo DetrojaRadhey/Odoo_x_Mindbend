@@ -103,7 +103,7 @@ const Register = () => {
         other_contact: otherContacts
       };
       // Make API call to backend using axios
-      const response = await axios.post('http://localhost:8080/auth/signup', userData, {
+      const response = await axios.post('http://localhost:3000/auth/signup', userData, {
         withCredentials: true // Important for cookies to be sent/received
       });
 
