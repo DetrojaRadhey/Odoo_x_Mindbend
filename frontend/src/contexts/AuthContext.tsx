@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           } as UserAuthUser;
         } else if (userData.role === 'service_provider') {
           authUser = {
-            id: userData.id,
+            _id: userData.id,
             name: userData.name,
             email: userData.email,
             role: 'service_provider',
