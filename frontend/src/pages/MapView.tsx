@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,7 @@ const MapView = () => {
     return <Navigate to="/login" replace />;
   }
   
-  if (currentUser.userType !== 'service_provider') {
+  if (currentUser.role !== 'service_provider') {
     return <Navigate to="/dashboard" replace />;
   }
   
@@ -35,9 +34,9 @@ const MapView = () => {
   const handleAcceptRequest = async (id: string, isEmergency: boolean) => {
     try {
       if (isEmergency) {
-        await acceptEmergencyRequest(id, currentUser.id);
+        await acceptEmergencyRequest(id, currentUser._id);
       } else {
-        await acceptServiceRequest(id, currentUser.id);
+        await acceptServiceRequest(id, currentUser._id);
       }
       toast.success(`${isEmergency ? "Emergency" : "Service"} request accepted successfully!`);
       setSelectedRequest(null);

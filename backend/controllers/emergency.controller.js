@@ -11,6 +11,7 @@ const mongoose = require("mongoose");
 exports.saveemergency = async (req, res) => {
     try {
         const { latitude, longitude, userid } = req.body;
+        console.log('Received emergency request:', { latitude, longitude, userid });
 
         if (!latitude || !longitude || !userid) {
             return res.status(400).json(responseFormatter(false, "Missing required fields"));
@@ -22,31 +23,36 @@ exports.saveemergency = async (req, res) => {
         }
 
         // Check for existing emergency requests in the last hour
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000); // 1 hour ago
+        const oneHourAgo = new Date(Date.now() - 1000); // 1 hour ago
         const existingRequest = await Emergency.findOne({
             user: new mongoose.Types.ObjectId(userid),
-            created_at: { $gte: oneHourAgo },
+            // created_at: { $gte: oneHourAgo },
             status: { $in: ['pending', 'accepted'] }
         });
 
         if (existingRequest) {
-            const timeDiff = Math.floor((Date.now() - existingRequest.created_at.getTime()) / (1000 * 60)); // difference in minutes
+            console.log('Found existing request:', existingRequest);
+            const timeDiff = Math.floor((Date.now() - existingRequest.created_at.getTime()) / (1000 * 60));
             return res.status(200).json({
               success: false,
                 message: `You already have an active emergency request. Please wait ${60 - timeDiff} minutes before creating a new request.`,
             });
         }
 
-        
         // Create emergency request
         const emergencyReq = new Emergency({
-            latlon: { type: "Point", coordinates: [longitude, latitude] },
+            latlon: { 
+                type: "Point", 
+                coordinates: [longitude, latitude] 
+            },
             user: new mongoose.Types.ObjectId(userid),
             status: "pending",
             created_at: new Date()
         });
 
+        console.log('Saving emergency request:', emergencyReq);
         await emergencyReq.save();
+        console.log('Emergency request saved successfully');
 
         return res.status(200).json({
             success: true,
@@ -54,7 +60,7 @@ exports.saveemergency = async (req, res) => {
             data: emergencyReq,
         });
     } catch (error) {
-        console.error(error);
+        console.error("Error saving emergency request:", error);
         return res.status(500).json({
             success: false,
             message: "Internal server error",
@@ -78,18 +84,18 @@ exports.showreqtohos = async (req, res) => {
           return res.status(404).json({ message: "Service provider not found" });
       }
 
-      console.log(serviceProviders.latlon);  // Log the location data
+      console.log('Service Provider Location:', serviceProviders.latlon);
       
+      // First, let's check all pending requests without geo filtering
+      const allPendingRequests = await Emergency.find({ status: 'pending' }).populate('user', 'name mobile');
+      console.log('All Pending Requests:', allPendingRequests);
+
       if (!serviceProviders.latlon || !Array.isArray(serviceProviders.latlon.coordinates)) {
           return res.status(400).json({ message: "Invalid location data for service provider" });
       }
 
       const [longitude, latitude] = serviceProviders.latlon.coordinates;
-
-      // ✅ Ensure longitude & latitude are valid numbers
-      if (typeof latitude !== "number" || typeof longitude !== "number") {
-          return res.status(400).json({ message: "Invalid latitude/longitude values" });
-      }
+      console.log('Provider coordinates:', { longitude, latitude });
 
       const requests = await Emergency.find({
           status: 'pending',
@@ -99,19 +105,17 @@ exports.showreqtohos = async (req, res) => {
                       type: 'Point',
                       coordinates: [longitude, latitude]
                   },
-                  $maxDistance: 10000 // 10 km
+                  $maxDistance: 10000000 // 10 km
               }
           }
       }).populate('user', 'name mobile');
 
-      if (!requests || requests.length === 0) {
-          return res.status(404).json({ message: "No requests found" });
-      }
+      console.log('Filtered Requests:', requests);
 
       return res.status(200).json({
           success: true,
-          message: "Requests retrieved successfully",
-          data: requests,
+          message: requests.length ? "Requests retrieved successfully" : "No requests found",
+          data: requests || []
       });
 
   } catch (error) {
@@ -414,7 +418,7 @@ exports.showreqtohos = async (req, res) => {
                       type: 'Point',
                       coordinates: serviceProvider.latlon.coordinates
                     },
-                    $maxDistance: 10000 // 10 km radius
+                    $maxDistance: 1000000 // 1000 km radius
                   }
                 }
               }).populate('user', 'name mobile location');

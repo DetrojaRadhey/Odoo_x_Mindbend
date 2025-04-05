@@ -68,10 +68,11 @@ exports.createRequest = async (req, res) => {
             type: "Point",
             coordinates: [lng, lat]
           },
-          $maxDistance: 10000 // 10km in meters
+          $maxDistance: 30000 // 30km in meters
         }
       }
-    }).select('_id name contact location rating');
+    }).select('_id name contact location rating'); // ✅ Ensure _id is included
+    
     // console.log(nearbyServiceProviders);
     console.log("nearbyServiceProviders", nearbyServiceProviders);
     
