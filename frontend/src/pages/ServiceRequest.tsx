@@ -105,7 +105,7 @@ const ServiceRequest = () => {
     setIsSubmitting(true);
     try {
       const response = await axios.post(
-        'http://localhost:8080/request/createRequest',
+        'http://localhost:3000/request/createRequest',
         {
           latitude: location.lat,
           longitude: location.lon,

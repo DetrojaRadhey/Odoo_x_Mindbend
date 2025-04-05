@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ServiceRequest, EmergencyRequest, Payment, Review, ServiceProvider, User, RequestStatus, RequestTitle } from '../types';
 import { mockServiceRequests, mockEmergencyRequests, mockPayments, mockReviews, mockServiceProviders } from '../lib/mockData';
@@ -55,7 +54,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   // Service request actions
   const createServiceRequest = async (requestData: Partial<ServiceRequest>): Promise<ServiceRequest> => {
     try {
-      if (!currentUser || currentUser.userType !== 'user') {
+      if (!currentUser || currentUser.role !== 'user') {
         throw new Error("Only users can create service requests");
       }
       
@@ -65,7 +64,6 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       
       const newRequest: ServiceRequest = {
         id: Math.random().toString(36).substring(2, 15),
-        latlon: requestData.latlon,
         title: requestData.title as RequestTitle,
         describe_problem: requestData.describe_problem,
         vehical_info: requestData.vehical_info,
@@ -115,7 +113,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   
   const acceptServiceRequest = async (requestId: string, providerId: string): Promise<void> => {
     try {
-      const provider = serviceProviders.find(p => p.id === providerId);
+      const provider = serviceProviders.find(p => p._id === providerId);
       if (!provider) {
         throw new Error("Service provider not found");
       }
@@ -137,10 +135,10 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       // Calculate advance payment
       const request = updatedRequests[requestIndex];
       const distance = calculateDistance(
-        request.latlon.lat, 
-        request.latlon.lon, 
-        provider.latlon.lat, 
-        provider.latlon.lon
+        request.latlon.coordinates[0], 
+        request.latlon.coordinates[1], 
+        provider.location.coordinates?.[0] || 0, 
+        provider.location.coordinates?.[1] || 0
       );
       
       const advanceAmount = Math.round(distance * 50); // 50 per kilometer
@@ -149,7 +147,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       const newPayment: Payment = {
         id: Math.random().toString(36).substring(2, 15),
         userId: request.user.id,
-        serviceProviderId: provider.id,
+        serviceProviderId: provider._id,
         advance: advanceAmount,
         requestId: request.id,
         created_at: new Date(),
@@ -167,7 +165,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   // Emergency request actions
   const createEmergencyRequest = async (requestData: Partial<EmergencyRequest>): Promise<EmergencyRequest> => {
     try {
-      if (!currentUser || currentUser.userType !== 'user') {
+      if (!currentUser || currentUser.role !== 'user') {
         throw new Error("Only users can create emergency requests");
       }
       
@@ -224,7 +222,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   
   const acceptEmergencyRequest = async (requestId: string, providerId: string): Promise<void> => {
     try {
-      const provider = serviceProviders.find(p => p.id === providerId);
+      const provider = serviceProviders.find(p => p._id === providerId);
       if (!provider) {
         throw new Error("Service provider not found");
       }
@@ -246,10 +244,10 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       // Calculate advance payment
       const request = updatedRequests[requestIndex];
       const distance = calculateDistance(
-        request.latlon.lat, 
-        request.latlon.lon, 
-        provider.latlon.lat, 
-        provider.latlon.lon
+        request.latlon.coordinates[0], 
+        request.latlon.coordinates[1], 
+        provider.location.coordinates?.[0] || 0, 
+        provider.location.coordinates?.[1] || 0
       );
       
       const advanceAmount = Math.round(distance * 50); // 50 per kilometer
@@ -258,7 +256,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       const newPayment: Payment = {
         id: Math.random().toString(36).substring(2, 15),
         userId: request.user.id,
-        serviceProviderId: provider.id,
+        serviceProviderId: provider._id,
         advance: advanceAmount,
         requestId: request.id,
         created_at: new Date(),
@@ -347,7 +345,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   // Review actions
   const createReview = async (reviewData: Partial<Review>): Promise<Review> => {
     try {
-      if (!currentUser || currentUser.userType !== 'user') {
+      if (!currentUser || currentUser.role !== 'user') {
         throw new Error("Only users can create reviews");
       }
       
@@ -368,14 +366,14 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
       setReviews([...reviews, newReview]);
       
       // Update service provider rating
-      const provider = serviceProviders.find(p => p.id === reviewData.serviceProviderId);
+      const provider = serviceProviders.find(p => p._id === reviewData.serviceProviderId);
       if (provider) {
-        const providerReviews = [...reviews, newReview].filter(r => r.serviceProviderId === provider.id);
+        const providerReviews = [...reviews, newReview].filter(r => r.serviceProviderId === provider._id);
         const totalRating = providerReviews.reduce((sum, r) => sum + r.rating, 0);
         const newRating = totalRating / providerReviews.length;
         
         const updatedProviders = serviceProviders.map(p => 
-          p.id === provider.id ? { ...p, rating: parseFloat(newRating.toFixed(1)), service_count: p.service_count + 1 } : p
+          p._id === provider._id ? { ...p, rating: parseFloat(newRating.toFixed(1)), service_count: p.service_count + 1 } : p
         );
         
         setServiceProviders(updatedProviders);
@@ -405,20 +403,20 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   };
   
   const getServiceProviderRequests = () => {
-    if (!currentUser || currentUser.userType !== 'service_provider') return [];
+    if (!currentUser || currentUser.role !== 'service_provider') return [];
     return serviceRequests.filter(req => 
-      req.service_provider?.id === currentUser.id || req.status === "pending"
+      req.service_provider?._id === currentUser._id || req.status === "pending"
     );
   };
   
   const getServiceProviderEmergencyRequests = () => {
-    if (!currentUser || currentUser.userType !== 'service_provider') return [];
+    if (!currentUser || currentUser.role !== 'service_provider') return [];
     return emergencyRequests.filter(req => 
-      req.service_provider?.id === currentUser.id || req.status === "pending"
+      req.service_provider?._id === currentUser._id || req.status === "pending"
     );
   };
   
-  const getServiceProviderById = (id: string) => serviceProviders.find(provider => provider.id === id);
+  const getServiceProviderById = (id: string) => serviceProviders.find(provider => provider._id === id);
 
   // Helper function to calculate distance between two lat/lon points in kilometers
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {

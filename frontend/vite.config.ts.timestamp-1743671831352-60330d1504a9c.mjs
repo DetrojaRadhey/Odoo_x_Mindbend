@@ -7,7 +7,7 @@ var __vite_injected_original_dirname = "E:\\Oddoo\\frontend";
 var vite_config_default = defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 8080
+    port: 3000
   },
   plugins: [
     react(),

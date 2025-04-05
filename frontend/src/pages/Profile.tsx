@@ -125,7 +125,7 @@ const Profile = () => {
       
       // Make API call to update user profile
       const response = await axios.put(
-        'http://localhost:8080/api/users/profile',
+        'http://localhost:3000/api/users/profile',
         {
           name: formData.name,
           mobile: formData.mobile,
