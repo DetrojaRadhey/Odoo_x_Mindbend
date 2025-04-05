@@ -1,14 +1,37 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import ShowServiceProvider from "@/components/ShowServiceProvider";
 import { Button } from "@/components/ui/button";
+
+import { useState, useEffect } from "react";
+
 import { ArrowLeft, Map } from "lucide-react";
-import { useState } from "react";
 import RequestMap from "@/components/RequestMap";
+
 
 export default function ServiceProvidersPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { providers, requestTitle, requestVehicle, serviceId } = location.state || {};
+  
+  const { providers: initialProviders, requestTitle, requestVehicle, serviceId } = location.state || {};
+  // Add state to manage providers
+  const [providers, setProviders] = useState(initialProviders || []);
+  console.log("Service ID:", serviceId);
+  
+  useEffect(() => {
+    // Update providers when location state changes
+    if (initialProviders) {
+      setProviders(initialProviders);
+    }
+  }, [initialProviders]);
+
+  // Function to handle when a provider is selected
+  const handleProviderSelected = (providerId: string) => {
+    // Remove the selected provider from the list
+    setProviders(providers.filter(provider => provider._id !== providerId));
+  };
+
+  if (!providers || providers.length === 0) {
+
   const [showMap, setShowMap] = useState(false);
   
   if (!providers) {
@@ -58,6 +81,7 @@ export default function ServiceProvidersPage() {
         title={`Service Providers for ${requestTitle}`}
         requestVehicle={requestVehicle}
         serviceId={serviceId}
+        onProviderSelected={handleProviderSelected}
       />
 
       {/* Map Dialog */}

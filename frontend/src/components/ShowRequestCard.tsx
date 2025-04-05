@@ -55,6 +55,8 @@ export default function ShowRequestCard() {
               'Content-Type': 'application/json'
             }
           });
+          console.log(response.data);
+          
         if (response.data.success) {
           setRequests(response.data.data.requests);
         } else {
@@ -71,16 +73,21 @@ export default function ShowRequestCard() {
     fetchRequests();
   }, []);
 
-//   const handleCancelRequest = async (requestId: string) => {
-//     try {
-//       const response = await axios.delete(`http://localhost:5000/api/request/${requestId}`);
-//       if (response.data.success) {
-//         setRequests(requests.filter(request => request._id !== requestId));
-//       }
-//     } catch (err) {
-//       console.error('Error cancelling request:', err);
-//     }
-//   };
+  const handleCancelRequest = async (requestId: string) => {
+    try {
+      const response = await axios.delete(`http://localhost:3000/request/delete/${requestId}`, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.data.success) {
+        setRequests(requests.filter(request => request._id !== requestId));
+      }
+    } catch (err) {
+      console.error('Error cancelling request:', err);
+    }
+  };
 
   const handleCardClick = (request: Request) => {
     console.log(request);
@@ -174,6 +181,27 @@ export default function ShowRequestCard() {
                   </div>
 
                   {/* Action Buttons */}
+
+                  {request.status === "pending" && (
+                    <div className="flex space-x-2 pt-2" onClick={(e) => e.stopPropagation()}>
+                      {/* <Button
+                        variant="outline"
+                        onClick={() => navigate(`/edit-request/${request._id}`)}
+                      >
+                        Edit
+                      </Button> */}
+                      <Button
+                        variant="destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCancelRequest(request._id);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
+
                   <div className="flex space-x-2 pt-2" onClick={(e) => e.stopPropagation()}>
                     <Button
                       variant="outline"
@@ -185,6 +213,7 @@ export default function ShowRequestCard() {
                       View Map
                     </Button>
                   </div>
+
                 </div>
               </CardContent>
             </Card>
